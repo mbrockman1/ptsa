@@ -8,9 +8,9 @@
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 
 # local imports
-from datawrapper import DataWrapper
-from events import Events,TsEvents
-from timeseries import TimeSeries,Dim
+from .datawrapper import DataWrapper
+from .events import Events,TsEvents
+from .timeseries import TimeSeries,Dim
 
 # global imports
 import numpy as np
@@ -38,13 +38,13 @@ class RawBinaryEEG(DataWrapper):
         self.params = self._getParams(dataroot)
 
         # set what we can from the params 
-        if self.params.has_key('samplerate'):
+        if 'samplerate' in self.params:
             self.samplerate = self.params['samplerate']
-        if self.params.has_key('format'):
+        if 'format' in self.params:
             self.format = self.params['format']
-        if self.params.has_key('dataformat'):
+        if 'dataformat' in self.params:
             self.format = self.params['dataformat']
-        if self.params.has_key('gain'):
+        if 'gain' in self.params:
             self.gain = self.params['gain']
 
         # set the nBytes and format str
@@ -162,7 +162,7 @@ def createEventsFromMatFile(matfile):
     # load the mat file
     mat = loadmat(matfile)
 
-    if 'events' not in mat.keys():
+    if 'events' not in list(mat.keys()):
         raise "\nError processing the Matlab file: %s\n" + \
               "This file must contain an events structure" + \
               "with the name \"events\" (case sensitive)!\n" +\
@@ -184,7 +184,7 @@ def createEventsFromMatFile(matfile):
 	    hasEEGInfo = True
 
 	    # get unique files
-	    eegfiles = np.unique(map(lambda x: str(x.eegfile),mat['events']))
+	    eegfiles = np.unique([str(x.eegfile) for x in mat['events']])
 	    
 	    # make dictionary of data wrapers for the eeg files
 	    efile_dict = {}
@@ -195,14 +195,13 @@ def createEventsFromMatFile(matfile):
 	    efile_dict[''] = None
 	
 	    # set the eegfile to the correct data wrapper
-	    newdat = np.array(map(lambda x: efile_dict[str(x.__getattribute__(field))],
-				 mat['events']))
+	    newdat = np.array([efile_dict[str(x.__getattribute__(field))] for x in mat['events']])
 			
 	    # change field name to eegsrc
 	    fields[f] = 'eegsrc'
 	else:
 	    # get the data in normal fashion
-	    newdat = np.array(map(lambda x: x.__getattribute__(field),mat['events']))
+	    newdat = np.array([x.__getattribute__(field) for x in mat['events']])
 
 	# append the data
 	data.append(newdat)

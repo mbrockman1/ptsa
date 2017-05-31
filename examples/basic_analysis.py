@@ -20,7 +20,7 @@ aw = ArrayWrapper(dat, samplerate)
 eoffset = np.arange(event_dur*2,nsamples-(2*event_dur),event_dur)
 esrc = [aw]*len(eoffset)
 nrec = len(eoffset)/2
-recalled = [True]*nrec + [False]*(len(eoffset)-nrec)
+recalled = [True]*int(nrec) + [False]*int((len(eoffset)-nrec))
 events = Events(np.rec.fromarrays([esrc,eoffset,recalled],
                                   names='esrc,eoffset,recalled'))
 
@@ -55,7 +55,7 @@ rdat = rdat.remove_buffer(buf_dur)
 ndat = ndat.remove_buffer(buf_dur)
 rpow = rpow.remove_buffer(buf_dur)
 npow = npow.remove_buffer(buf_dur)
-    
+
 # plot ERP
 pl.figure(1)
 pl.clf()

@@ -10,8 +10,8 @@
 # global imports
 import numpy as np
 
-from timeseries import TimeSeries,Dim
-from basewrapper import BaseWrapper
+from .timeseries import TimeSeries,Dim
+from .basewrapper import BaseWrapper
 
 #import pdb
 
@@ -83,9 +83,9 @@ class Events(np.recarray):
         names = ','.join(self.dtype.names)
         
         # loop over the kwargs of field
-        for name,data in fields.iteritems():
+        for name,data in fields.items():
             # see if already there, error if so
-            if self.dtype.fields.has_key(name):
+            if name in self.dtype.fields:
                 # already exists
                 raise ValueError('Field "'+name+'" already exists.')
             

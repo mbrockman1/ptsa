@@ -52,7 +52,7 @@ class IWASOBI():
         #     ik=d*(k-1);
         #     C0(:,ik+1:ik+d)=0.5*(C0(:,ik+1:ik+d)+C0(:,ik+1:ik+d)');
         # end      %%%%%%%%% symmetrization
-        for k in xrange(1,self.ar_max+1):
+        for k in range(1,self.ar_max+1):
             ik = d*(k)
             C0[:,ik:ik+d] = 0.5*(C0[:,ik:ik+d]+C0[:,ik:ik+d].T)
 
@@ -69,7 +69,7 @@ class IWASOBI():
         #     [H ARC]=weights(Ms,rmax,eps0);
         #     [W Ms]=wajd(C0,H,W,5);
         # end
-        for i in xrange(num_iterations):
+        for i in range(num_iterations):
             H,ARC = self.weights(Ms,self.rmax,self.eps0)
             W,Ms = self.wajd(C0,H,W,5)
 
@@ -107,7 +107,7 @@ class IWASOBI():
         # %  A=toeplitz(phi(1:K,im),phi(1:K,im)')+hankel(phi(1:K,im),phi(K:2*K-1,im)')+eps(im)*eye(K);
         # %  C=[C inv(A)];
         # %end
-        for im in xrange(M):
+        for im in range(M):
             A = (toeplitz(phi[:K,im],phi[:K,im].T) + 
                  hankel(phi[:K,im],phi[K-1:2*K,im].T) +
                  eps[im]*np.eye(K))
@@ -199,7 +199,7 @@ class IWASOBI():
         AR = np.zeros((M,d))
         
         # for id=1:d
-        for id in xrange(d):
+        for id in range(d):
             # AR(:,id)=[1; -toeplitz(R(1:M-1,id),R(1:M-1,id)')\R(2:M,id)];
             AR[:,id] = np.r_[1,np.linalg.lstsq(-toeplitz(R[:M-1,id],R[:M-1,id].T),
                                                R[1:M,id])[0]]
@@ -264,7 +264,7 @@ class IWASOBI():
         # XXX Check here if broken
         for n in range(p)[::-1]: #range(p-1,-1,-1):
             K[n,:] = -a[n+1,:]
-            for k in xrange(n):
+            for k in range(n):
                 alfa[k+1,:] = (a[k+1,:]+K[n,:]*a[n-k,:])/(1-K[n,:]**2)
             a = alfa.copy()
         # %  
@@ -286,7 +286,7 @@ class IWASOBI():
         #       r(k+1,:) = f(1,:);
         #   end
         # XXX Check here if broken
-        for k in xrange(p):
+        for k in range(p):
             for n in range(k+1)[::-1]: #range(k-1:-1,-1):
                 K_n = K[n,:]
                 f[n,:] = f[n+1,:] + K_n*b[k-n,:]
@@ -309,7 +309,7 @@ class IWASOBI():
         # for index=1:q+1
         #     R_est(:,NumOfSources*(index-1) + (1:NumOfSources)) = 1/T*(x(:,1:T)*x(:,index:T+index-1)');
         # end
-        for index in xrange(q+1):
+        for index in range(q+1):
             #irange = NumOfSources*(index) + np.arange(NumOfSources)
             i = NumOfSources*(index)
             R_est[:,i:i+NumOfSources] = (1/np.float(T))*(np.dot(x[:,:T],x[:,index:T+index].T))
@@ -334,7 +334,7 @@ class IWASOBI():
         #     R(index,:)=diag(Ms(:,id+1:id+d)).';  %%% columns of R will contain 
         #                            %%% covariance function of the separated components
         # end
-        for index in xrange(L):
+        for index in range(L):
             id = index*d
             R[index,:] = np.diag(Ms[:,id:id+d])
         # %
@@ -352,8 +352,8 @@ class IWASOBI():
         #   end  
         # end
         ll = 0
-        for i in xrange(1,d):
-            for k in xrange(i):
+        for i in range(1,d):
+            for k in range(i):
                 AR3[:,ll] = np.convolve(ARC[:,i],ARC[:,k])
                 ll += 1
         # phi=ar2r(AR3);     %%%%%%%%%% functions phi to evaluate CVinv
@@ -371,8 +371,8 @@ class IWASOBI():
         #   end
         # end
         im = 0
-        for i in xrange(1,d):
-            for k in xrange(i):
+        for i in range(1,d):
+            for k in range(i):
                 fact = 1/(sigmy[i]*sigmy[k])
                 imm = im*L
                 H[:,imm:imm+L] = H[:,imm:imm+L]*fact
@@ -404,8 +404,8 @@ class IWASOBI():
         #         sum_Rs_s=sum_Rs_s+(ARC(s+1,:).*ARC(t+1,:))'*Rs(abs(s-t)+1,:);
         #     end
         # end
-        for s in xrange(M):
-            for t in xrange(M):
+        for s in range(M):
+            for t in range(M):
                 sum_Rs_s += np.dot((ARC[s,:]*ARC[t,:])[np.newaxis,:].T,
                                   Rs[np.abs(s-t),:][np.newaxis,:])
 
@@ -472,7 +472,7 @@ class IWASOBI():
         #       Ms(:,ini+1:ini+d)=W_est*M(:,ini+1:ini+d)*W_est';
         #       Rs(:,k)=diag(Ms(:,ini+1:ini+d));
         # end
-        for k in xrange(L):
+        for k in range(L):
             ini = k*d
             M[:,ini:ini+d] = 0.5*(M[:,ini:ini+d]+M[:,ini:ini+d].T)
             Ms[:,ini:ini+d] = np.dot(np.dot(W_est,M[:,ini:ini+d]),W_est.T)
@@ -493,7 +493,7 @@ class IWASOBI():
             #     c2=[c2; (Rs(id,:)*Yim')'];
             #     c1=[c1; sum(Rs(1:id-1,:).*Yim,2)];
             #   end
-            for id in xrange(1,d):
+            for id in range(1,d):
                 Yim = Ms[0:id,id:Md:d]
                 b22.append(np.dot((Rs[id,:]**2).sum(0),np.ones((id,1))))
                 b12.append(np.dot(Rs[id,:],Rs[:id,:].T).T)
@@ -521,7 +521,7 @@ class IWASOBI():
             #       A0(1:id-1,id)=d2(m+1:m+id-1,1);
             #       m=m+id-1;
             #   end
-            for id in xrange(1,d):
+            for id in range(1,d):
                 A0[id,0:id] = d1[m:m+id]
                 A0[0:id,id] = d2[m:m+id]
                 m += id
@@ -541,7 +541,7 @@ class IWASOBI():
             #      Ms(:,ini+1:ini+d) = W_est*M(:,ini+1:ini+d)*W_est';
             #      Rs(:,k)=diag(Ms(:,ini+1:ini+d));
             #   end
-            for k in xrange(L):
+            for k in range(L):
                 ini = k*d
                 Ms[:,ini:ini+d] = np.dot(np.dot(W_est,M[:,ini:ini+d]),W_est.T)
                 Rs[:,k] = np.diag(Ms[:,ini:ini+d])
@@ -614,14 +614,14 @@ class IWASOBI():
         #       Ms(:,ini+1:ini+d)=W_est*M(:,ini+1:ini+d)*W_est';
         #       Rs(:,k)=diag(Ms(:,ini+1:ini+d));
         # end 
-        for k in xrange(L):
+        for k in range(L):
             ini = k*d
             M[:,ini:ini+d] = 0.5*(M[:,ini:ini+d]+M[:,ini:ini+d].T)
             Ms[:,ini:ini+d] = np.dot(np.dot(W_est,M[:,ini:ini+d]),W_est.T)
             Rs[:,k] = np.diag(Ms[:,ini:ini+d])
 
         # for iter=1:maxnumit
-        for iter in xrange(maxnumit):
+        for iter in range(maxnumit):
             #  b11=zeros(dd2,1); b12=b11; b22=b11; c1=b11; c2=c1;
             b11 = np.zeros((dd2,1))
             b12 = np.zeros((dd2,1))
@@ -646,8 +646,8 @@ class IWASOBI():
             #         c2(m)=Wlam1'*Yim';
             #      end
             #   end
-            for id in xrange(1,d):
-                for id2 in xrange(id):
+            for id in range(1,d):
+                for id2 in range(id):
                     im = m*L
                     Wm = H[:,im:im+L]
                     Yim = Ms[id,id2:Md:d]
@@ -676,7 +676,7 @@ class IWASOBI():
             #       A0(1:id-1,id)=d2(m+1:m+id-1,1);
             #       m=m+id-1;
             #   end
-            for id in xrange(1,d):
+            for id in range(1,d):
                 A0[id,0:id] = d1[m:m+id,0]
                 A0[0:id,id] = d2[m:m+id,0]
                 m += id
@@ -695,7 +695,7 @@ class IWASOBI():
             #      Ms(:,ini+1:ini+d) = W_est*M(:,ini+1:ini+d)*W_est';
             #      Rs(:,k)=diag(Ms(:,ini+1:ini+d));
             #   end
-            for k in xrange(L):
+            for k in range(L):
                 ini = k*d
                 Ms[:,ini:ini+d] = np.dot(np.dot(W_est,M[:,ini:ini+d]),W_est.T)
                 Rs[:,k] = np.diag(Ms[:,ini:ini+d])

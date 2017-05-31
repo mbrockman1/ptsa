@@ -9,7 +9,7 @@
 
 # global imports
 import numpy as np
-from timeseries import TimeSeries,Dim
+from .timeseries import TimeSeries,Dim
 
 #import pdb
 
@@ -23,13 +23,13 @@ class Events(np.recarray):
     # def __new__(subtype, shape, dtype=None, buf=None, offset=0, strides=None,
     #             formats=None, names=None, titles=None,
     #             byteorder=None, aligned=False):
-    
+
     # def __new__(*args,**kwargs):
     #     return np.recarray.__new__(*args,**kwargs)
 
     def __new__(subtype, data):
         return data.view(subtype)
-        
+
     def remove_fields(self,*fields_to_remove):
         """
         Return a new instance of the recarray with specified fields
@@ -60,7 +60,7 @@ class Events(np.recarray):
         if len(arrays) == 0:
             arrays.append([])
         return np.rec.fromarrays(arrays,names=','.join(names)).view(self.__class__)
-        
+
     def add_fields(self,**fields):
         """
         Add fields from the keyword args provided and return a new
@@ -76,28 +76,28 @@ class Events(np.recarray):
         Returns
         -------
         New Events instance with the specified new fields.
-        
+
         Examples
         --------
         events.add_fields(name1=array1, name2=dtype('i4'))
-        
+
         """
 
         # list of current dtypes to which new dtypes will be added:
         # new_dtype = [(name,self[name].dtype) for name in self.dtype.names]
-        
+
         # sequence of arrays and names from starting recarray
         #arrays = map(lambda x: self[x], self.dtype.names)
         arrays = [self[x] for x in self.dtype.names]
         names = ','.join(self.dtype.names)
-        
+
         # loop over the kwargs of field
-        for name,data in fields.iteritems():
+        for name,data in fields.items():
             # see if already there, error if so
-            if self.dtype.fields.has_key(name):
+            if name in self.dtype.fields:
                 # already exists
                 raise ValueError('Field "'+name+'" already exists.')
-            
+
             # append the array and name
             if(isinstance(data,np.dtype)|
                isinstance(data,type)|isinstance(data,str)):
@@ -155,25 +155,25 @@ class Events(np.recarray):
         eoffset: {string},optional
             Name for the field containing the offset (in seconds) for
             the event within the specified source.
-        eoffset_in_time: {boolean},optional        
+        eoffset_in_time: {boolean},optional
             If True, the unit of the event offsets is taken to be
             time (unit of the data), otherwise samples.
-        
+
         Returns
         -------
         A TimeSeries instance with dimensions (channels,events,time).
         """
-        
+
         # check for necessary fields
         if not (esrc in self.dtype.names and
                 eoffset in self.dtype.names):
             raise ValueError(esrc+' and '+eoffset+' must be valid fieldnames '+
                              'specifying source and offset for the data.')
-        
-	# get ready to load dat
-	eventdata = []
+
+        # get ready to load dat
+        eventdata = []
         events = []
-        
+
         # speed up by getting unique event sources first
         usources = np.unique(self[esrc])
 
@@ -182,7 +182,7 @@ class Events(np.recarray):
         for src in usources:
             # get the eventOffsets from that source
             ind = np.atleast_1d(self[esrc]==src)
-            
+
             if len(ind) == 1:
                 event_offsets=self[eoffset]
                 events.append(self)
@@ -210,7 +210,7 @@ class Events(np.recarray):
                 eventdata = newdat
             else:
                 eventdata = eventdata.extend(newdat,axis=1)
-            
+
         # concatenate (must eventually check that dims match)
         tdim = eventdata['time']
         cdim = eventdata['channels']
@@ -219,8 +219,5 @@ class Events(np.recarray):
         eventdata = TimeSeries(eventdata,
                                'time', srate,
                                dims=[cdim,Dim(events,'events'),tdim])
-        
+
         return eventdata
-
-    
-

@@ -11,8 +11,8 @@
 import numpy as np
 
 from dimarray import Dim
-from timeseries import TimeSeries
-from basewrapper import BaseWrapper
+from .timeseries import TimeSeries
+from .basewrapper import BaseWrapper
 
 #import pdb
 
@@ -47,7 +47,7 @@ class Events(np.recarray):
         """
         if not(self._required_fields is None):
             for req_field in self._required_fields:
-                if sum(map(lambda x: x==req_field,fields_to_remove)) > 0:
+                if sum([x==req_field for x in fields_to_remove]) > 0:
                     raise ValueError(req_field+' is a required field!')
         # sequence of arrays and names
         arrays = []
@@ -56,7 +56,7 @@ class Events(np.recarray):
         # loop over fields, keeping if not matching fieldName
         for field in self.dtype.names:
             # don't add the field if in fields_to_remove list
-            if sum(map(lambda x: x==field,fields_to_remove)) == 0:
+            if sum([x==field for x in fields_to_remove]) == 0:
                 # append the data
                 arrays.append(self[field])
                 if len(names)>0:
@@ -81,13 +81,13 @@ class Events(np.recarray):
         # new_dtype = [(name,self[name].dtype) for name in self.dtype.names]
         
         # sequence of arrays and names from starting recarray
-        arrays = map(lambda x: self[x], self.dtype.names)
+        arrays = [self[x] for x in self.dtype.names]
         names = ','.join(self.dtype.names)
         
         # loop over the kwargs of field
-        for name,data in fields.iteritems():
+        for name,data in fields.items():
             # see if already there, error if so
-            if self.dtype.fields.has_key(name):
+            if name in self.dtype.fields:
                 # already exists
                 raise ValueError('Field "'+name+'" already exists.')
             

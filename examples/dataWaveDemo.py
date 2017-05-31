@@ -12,12 +12,12 @@ from pyeeg import wavelet
 # hypothetical test case
 
 # load events
-print "Loading events..."
+print("Loading events...")
 ev = createEventsFromMatFile('/home1/per/eeg/free/CH012/events/events.mat')
 
 # we leave the buffer on after getting the data, but pull it off
 # in the call to tsPhasePow
-freqs = range(2,81,2)
+freqs = list(range(2,81,2))
 chan = 27
 dur = 2.5
 offset = -.500
@@ -26,7 +26,7 @@ resampledRate = 200
 filtFreq = [58.0,62.0]
 
 # load the eeg data
-print "Loading EEG data..."
+print("Loading EEG data...")
 rEEG = ev.select(ev['recalled']==1).get_data(chan,
                                              dur,
                                              offset,
@@ -43,7 +43,7 @@ nEEG = ev.select(ev['recalled']==0).get_data(chan,
                                              keepBuffer=True)
 
 # power for recalled events
-print "Calculating power..."
+print("Calculating power...")
 rRes = wavelet.tsPhasePow(freqs,
                           rEEG,
                           verbose=True,toReturn='pow')
@@ -53,11 +53,11 @@ nRes = wavelet.tsPhasePow(freqs,
                           verbose=True,toReturn='pow')
 
 # get mean power across events (axis=1)
-print "Taking mean power..."
+print("Taking mean power...")
 rPow = rRes.apply_func(N.log10).aggregate('event',N.mean)
 nPow = nRes.apply_func(N.log10).aggregate('event',N.mean)
 
-print "Generating plots..."
+print("Generating plots...")
 fig = 0
 
 # erp

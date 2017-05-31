@@ -13,9 +13,9 @@ import numpy as np
 from scipy.special import sinc
 
 
-from helper import reshape_to_2d, reshape_from_2d, repeat_to_match_dims
+from .helper import reshape_to_2d, reshape_from_2d, repeat_to_match_dims
 
-from filtfilt import filtfilt as filtfilt_future
+from .filtfilt import filtfilt as filtfilt_future
 
 import pdb
 
@@ -79,7 +79,7 @@ def decimate(x, q, n=None, ftype='iir', axis=-1):
     """
 
     if type(q) != type(1):
-        raise TypeError, "q should be an integer"
+        raise TypeError("q should be an integer")
 
     if n is None:
         if ftype == 'fir':
@@ -98,7 +98,7 @@ def decimate(x, q, n=None, ftype='iir', axis=-1):
         y = reshape_to_2d(x,axis)
 
         # loop over final dimension
-        for i in xrange(y.shape[0]):
+        for i in range(y.shape[0]):
             y[i] = filtfilt(b,a,y[i])
         #y = filtfilt2(b,a,y)
 
@@ -150,11 +150,11 @@ def filtfilt(b,a,x):
     edge=ntaps*3
 
     if x.ndim != 1:
-        raise ValueError, "Filtflit is only accepting 1 dimension arrays."
+        raise ValueError("Filtflit is only accepting 1 dimension arrays.")
 
     #x must be bigger than edge
     if x.size < edge:
-        raise ValueError, "Input vector needs to be bigger than 3 * max(len(a),len(b)."
+        raise ValueError("Input vector needs to be bigger than 3 * max(len(a),len(b).")
 
 
     if len(a)!=len(b):
@@ -186,7 +186,7 @@ def filtfilt2(b,a,x,axis=-1):
 
     #x must be bigger than edge
     if x.shape[axis] < edge:
-        raise ValueError, "Input vector needs to be bigger than 3 * max(len(a),len(b)."
+        raise ValueError("Input vector needs to be bigger than 3 * max(len(a),len(b).")
 
     # fill out b if necessary
     if len(a)!=len(b):
@@ -199,9 +199,9 @@ def filtfilt2(b,a,x,axis=-1):
     #the filter with inverted replicas of the signal
     #s=r_[2*x[0]-x[edge:1:-1],x,2*x[-1]-x[-1:-edge:-1]]
     
-    bRange = range(edge,1,-1)
+    bRange = list(range(edge,1,-1))
     sBeg = 2*x.take([0],axis).repeat(len(bRange),axis) - x.take(bRange,axis)
-    eRange = range(-1,-edge,-1)
+    eRange = list(range(-1,-edge,-1))
     sEnd = 2*x.take([-1],axis).repeat(len(eRange),axis) - x.take(eRange,axis)
 
     s = concatenate((sBeg,x,sEnd),axis)
@@ -217,11 +217,11 @@ def filtfilt2(b,a,x,axis=-1):
     # perform filter in reverse direction
     sEnd = y.take([-1],axis).repeat(len(zi),axis)
     ziEnd = repeat_to_match_dims(zi,sEnd,axis) * sEnd
-    (y,zf)=lfilter(b,a,y.take(range(y.shape[axis]-1,-1,-1),axis),axis,ziEnd)
+    (y,zf)=lfilter(b,a,y.take(list(range(y.shape[axis]-1,-1,-1)),axis),axis,ziEnd)
 
     # flip it back
-    y = y.take(range(y.shape[axis]-1,-1,-1),axis)
-    return y.take(range(edge-1,y.shape[axis]-edge+1),axis)
+    y = y.take(list(range(y.shape[axis]-1,-1,-1)),axis)
+    return y.take(list(range(edge-1,y.shape[axis]-edge+1)),axis)
     
 
 # if __name__=='__main__':

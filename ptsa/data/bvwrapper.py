@@ -8,12 +8,12 @@
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 
 # local imports
-from basewrapper import BaseWrapper
+from .basewrapper import BaseWrapper
 
 # global imports
 import numpy as np
 import os.path
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 import io
 
 class BVWrapper(BaseWrapper):
@@ -64,7 +64,7 @@ class BVWrapper(BaseWrapper):
         hdr_string = ''.join(lines[1:ind])
 
         # now read it in
-        cp.readfp(io.BytesIO(hdr_string))
+        cp.readfp(io.StringIO(hdr_string))
 
         # extract the info we need
         self._binaryformat = cp.get('Binary Infos','binaryformat')
@@ -86,7 +86,7 @@ class BVWrapper(BaseWrapper):
             numbers.append(i+1)
             names.append(info[0])
             scales.append(float(info[2]))
-            units.append(unicode(info[3],'utf-8'))
+            units.append(str(info[3]))
         # try and get the impedances
         impedances = np.ones(len(names))*-1
         for i,line in enumerate(lines[ind:]):
@@ -102,7 +102,7 @@ class BVWrapper(BaseWrapper):
         self._channel_info = np.rec.fromarrays([numbers,names,scales,
                                                 units,impedances],
                                                names='number,name,scale,unit,impedance')
-            
+
         # process the binary format
         if self._binaryformat == 'INT_16':
             self._samplesize = 2
@@ -111,7 +111,7 @@ class BVWrapper(BaseWrapper):
             self._samplesize = 4
             self._dtype = np.dtype(np.float32)
         else:
-            raise ValueError('Unknown binary format: %s\n' % self._binaryformat) 
+            raise ValueError('Unknown binary format: %s\n' % self._binaryformat)
 
         # open the file to figure out the nsamples
         mm = np.memmap(self._data_file,dtype=self._dtype,
@@ -135,7 +135,7 @@ class BVWrapper(BaseWrapper):
         # read in from annotations file (must strip off first lines)
         cp = SafeConfigParser()
         lines = open(self._markerfile,'r').readlines()
-        cp.readfp(io.BytesIO(''.join(lines[2:])))
+        cp.readfp(io.StringIO(''.join(lines[2:])))
 
         # get the marker info
         markers = cp.items('Marker Infos')
@@ -153,34 +153,34 @@ class BVWrapper(BaseWrapper):
             info = markers[i][1].split(',')
             annots.append(info[1])
             # convert onset to seconds (subtracting 1 for actual offset)
-            onsets[i] = (long(info[2]))/self._samplerate
+            onsets[i] = (int(info[2]))/self._samplerate
             # save duration (for now, keep as string like in EDF)
             durations.append(info[3])
-            if sub_one == False and info[0] == 'New Segment' and long(info[2])==1:
+            if sub_one == False and info[0] == 'New Segment' and int(info[2])==1:
                 # we need to sub_one
                 sub_one = True
         if sub_one:
-            onsets -= long(1)/self._samplerate
-            
+            onsets -= int(1)/self._samplerate
+
         # convert to rec array
         annotations = np.rec.fromarrays([onsets,durations,annots],
                                         names='onsets,durations,annotations')
 
         # sort by index and return
         return annotations[np.argsort(index)]
-    
+
     def _load_data(self,channels,event_offsets,dur_samp,offset_samp):
-        """        
+        """
         """
         # allocate for data
-	eventdata = np.empty((len(channels),len(event_offsets),dur_samp),
-                             dtype=np.float64)*np.nan
+        eventdata = np.empty((len(channels),len(event_offsets),int(dur_samp)),
+                                 dtype=np.float64)*np.nan
 
         # Memmap to the file
         mm = np.memmap(self._data_file,dtype=self._dtype,
-                       mode='r',shape=(self._nsamples,self._nchannels))
-        
-	# loop over events
+                       mode='r',shape=(int(self._nsamples),self._nchannels))
+
+    # loop over events
         for e,ev_offset in enumerate(event_offsets):
             # set the range
             ssamp = offset_samp+ev_offset
@@ -190,11 +190,8 @@ class BVWrapper(BaseWrapper):
                               ' is outside the bounds of the data.')
 
             # only pick the channels of interest and scale
-            dat = np.multiply(mm[ssamp:ssamp+dur_samp,channels],
+            dat = np.multiply(mm[ssamp:int(ssamp+dur_samp),channels],
                               self._channel_info['scale'][channels])
-                              #self._channel_scale[channels])
             eventdata[:,e,:] = dat.T
 
-        return eventdata    
-
-
+        return eventdata

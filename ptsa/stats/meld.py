@@ -54,8 +54,8 @@ else:
     r_model_matrix = rstats.model_matrix
 
 # load ptsa clustering
-import cluster
-from stat_helper import fdr_correction
+from . import cluster
+from .stat_helper import fdr_correction
 
 # deal with warnings for bootstrap
 import warnings
@@ -93,7 +93,7 @@ class LMER():
             factors = {}
         # add in missingarg for any potential factor not provided
         for k in df.dtype.names:
-            if isinstance(df[k][0],str) and not factors.has_key(k):
+            if isinstance(df[k][0],str) and k not in factors:
                 factors[k] = MissingArg
                 
         for f in factors:
@@ -241,7 +241,7 @@ def pick_stable_features(Z, nboot=500):
     """
     # generate the boots
     boots = [np.random.random_integers(0, len(Z)-1, len(Z))
-             for i in xrange(nboot)]
+             for i in range(nboot)]
 
     # calc bootstrap ratio
     # calc the bootstrap std in efficient way
@@ -486,7 +486,7 @@ def _eval_model(model_id, perm=None):
         # print "perm fail"
 
     # pull out data from all the components
-    tvals, log_likes = zip(*res)
+    tvals, log_likes = list(zip(*res))
     tvals = np.concatenate(tvals)
     log_likes = np.concatenate(log_likes)
 
@@ -629,7 +629,7 @@ class MELD(object):
         self._re_group = re_group
         if isinstance(ind_data, dict):
             # groups are the keys
-            self._groups = np.array(ind_data.keys())
+            self._groups = np.array(list(ind_data.keys()))
         else:
             # groups need to be extracted from the recarray
             self._groups = np.unique(ind_data[re_group])
@@ -699,7 +699,7 @@ class MELD(object):
                     sys.stdout.write('Ranking %s...' % (str(g)))
                     sys.stdout.flush()
 
-                for i in xrange(self._D[g].shape[1]):
+                for i in range(self._D[g].shape[1]):
                     # rank it
                     self._D[g][:, i] = rankdata(self._D[g][:, i])
 
@@ -738,7 +738,7 @@ class MELD(object):
                                          for c in self._svd_terms]).T
 
             if use_ranks:
-                for i in xrange(self._A[g].shape[1]):
+                for i in range(self._A[g].shape[1]):
                     # rank it
                     self._A[g][:, i] = rankdata(self._A[g][:, i])
 
@@ -809,14 +809,14 @@ class MELD(object):
 
         # clean up memmapping files
         if self._memmap:
-            for g in self._M.keys():
+            for g in list(self._M.keys()):
                 try:
                     filename = self._M[g].filename
                     del self._M[g]
                     os.remove(filename)
                 except OSError:
                     pass
-            for g in self._D.keys():
+            for g in list(self._D.keys()):
                 try:
                     filename = self._D[g].filename
                     del self._D[g]
@@ -847,7 +847,7 @@ class MELD(object):
 
             # gen the perms ahead of time
             perms = []
-            for p in xrange(nperms):
+            for p in range(nperms):
                 ind = {}
                 for k in self._groups:
                     # gen a perm for that subj
@@ -871,7 +871,7 @@ class MELD(object):
                        # backend='threading',
                        verbose=verbose)(delayed(_eval_model)(id(self), perm)
                                         for perm in perms)
-        tp, tfs, feat_mask = zip(*res)
+        tp, tfs, feat_mask = list(zip(*res))
         self._tp.extend(tp)
         self._tb.extend(tfs)
         self._pfmask.extend(feat_mask)
@@ -996,7 +996,7 @@ if __name__ == '__main__':
 
     # data with observations in first dimension and features on the remaining
     dep_data = np.random.randn(len(s), *nfeat)
-    print 'Data shape:', dep_data.shape
+    print('Data shape:', dep_data.shape)
 
     # make a mask
     dep_mask = np.ones(nfeat, dtype=np.bool)
@@ -1019,8 +1019,8 @@ if __name__ == '__main__':
         dep_data = scipy.ndimage.gaussian_filter(dep_data, [0, 1, 1])
         dep_data_s = scipy.ndimage.gaussian_filter(dep_data_s, [0, 1, 1])
 
-    print "Starting MELD test"
-    print "beh has signal, beh2 does not"
+    print("Starting MELD test")
+    print("beh has signal, beh2 does not")
     me_s = MELD('val ~ beh+beh2', '(1|subj)', 'subj',
                 dep_data_s, ind_data, factors={'subj': None},
                 use_ranks=use_ranks,
@@ -1038,5 +1038,5 @@ if __name__ == '__main__':
                )
     me_s.run_perms(nperms)
     pfts = me_s.p_features
-    print "Number of signifcant features:", [(n, (pfts[n] <= .05).sum())
-                                             for n in pfts.dtype.names]
+    print("Number of signifcant features:", [(n, (pfts[n] <= .05).sum())
+                                             for n in pfts.dtype.names])

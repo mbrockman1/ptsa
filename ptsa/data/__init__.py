@@ -8,12 +8,12 @@
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 
 from dimarray import Dim,DimArray,AttrArray
-from timeseries import TimeSeries
+from .timeseries import TimeSeries
 
-from basewrapper import BaseWrapper
-from arraywrapper import ArrayWrapper
+from .basewrapper import BaseWrapper
+from .arraywrapper import ArrayWrapper
 #from edfwrapper import EdfWrapper
 
-from events import Events
+from .events import Events
 
 

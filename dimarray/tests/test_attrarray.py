@@ -13,7 +13,7 @@ from numpy.testing import TestCase,\
 
 from dimarray import AttrArray
 
-import cPickle as pickle
+import pickle as pickle
 
 class test_AttrArray(TestCase):
     def setUp(self):
@@ -27,7 +27,7 @@ class test_AttrArray(TestCase):
         arr = np.random.random_sample(shape)
         dat_array = AttrArray(arr,name='randvals')
         self.assertTrue(dat_array.name == 'randvals')
-        self.assertEquals(shape,dat_array.shape)
+        self.assertEqual(shape,dat_array.shape)
         self.assertTrue((dat_array==arr).all())
         # another instatioation with an ndarray, but this time with
         # dtype set:
@@ -35,7 +35,7 @@ class test_AttrArray(TestCase):
         arr = np.random.random_sample(shape)
         dat_array = AttrArray(arr,name='randvals',dtype=np.float32)
         self.assertTrue(dat_array.name == 'randvals')
-        self.assertEquals(shape,dat_array.shape)
+        self.assertEqual(shape,dat_array.shape)
         # "almost" equal because of the casting to np.float32:
         assert_array_almost_equal(dat_array,arr)
         self.assertTrue(dat_array.dtype==np.float32)
@@ -48,7 +48,7 @@ class test_AttrArray(TestCase):
         self.assertTrue(dat_array.name == 'randvals')
         self.assertTrue(dat_array.test1 == 33)
         self.assertTrue(dat_array.test2 == 'test')
-        self.assertEquals(shape,dat_array.shape)
+        self.assertEqual(shape,dat_array.shape)
         assert_array_equal(dat_array,arr)
         dat_array[0] += 5
         # # "almost" equal because of slight inaccuracies in the the
@@ -59,13 +59,13 @@ class test_AttrArray(TestCase):
         self.assertTrue(dat_array.name == 'randvals')
         self.assertTrue(dat_array.test1 == 33)
         self.assertTrue(dat_array.test2 == 'test')
-        self.assertEquals(shape,dat_array.shape)
+        self.assertEqual(shape,dat_array.shape)
         self.assertTrue((dat_array==arr).all())
         dat_array[0] += 5
         assert_array_equal(dat_array[0],arr[0])
         
         # instantiation with a list:
-        lst = range(10)
+        lst = list(range(10))
         dat_list = AttrArray(lst,name='range')
         self.assertTrue(dat_list.name == 'range')
         self.assertTrue((lst==dat_list).all())
@@ -89,20 +89,20 @@ class test_AttrArray(TestCase):
         dat = AttrArray(np.random.rand(10),name='randvals')
         # add a custom attribute:
         dat.custom = 'attribute'
-        self.assertEquals(dat.custom,'attribute')
+        self.assertEqual(dat.custom,'attribute')
         # _required_attrs is read only:
         self.assertRaises(AttributeError,dat.__setattr__,'_required_attrs','test')
 
     def test_getattr(self):
         dat = AttrArray(np.random.rand(10),name='randvals')
-        self.assertEquals(dat.name,'randvals')
+        self.assertEqual(dat.name,'randvals')
 
     def test_method(self):
         # make sure ndarray methods work and return a new AttrArray
         # instance with the attributes intact
         dat = AttrArray(np.random.rand(10),name='randvals')
         sdat = np.sqrt(dat)
-        self.assertEquals(sdat.name,'randvals')
+        self.assertEqual(sdat.name,'randvals')
 
     def test_pickle(self):
         # make sure we can pickle this thing
@@ -119,7 +119,7 @@ class test_AttrArray(TestCase):
         # make sure has attr and it's correct
         self.assertTrue(hasattr(dat2,'_attrs'))
         self.assertTrue(hasattr(dat2,'name'))
-        self.assertEquals(dat2.name, 'randvals')
+        self.assertEqual(dat2.name, 'randvals')
 
         # make sure has required attr
         self.assertTrue(hasattr(dat2,'_required_attrs'))
@@ -129,37 +129,37 @@ class test_AttrArray(TestCase):
         dat = AttrArray(arr,name='randvals')
         # if there are no NaN's, std and nanstd should give equal
         # results:
-        self.assertEquals(dat.std(),dat.nanstd())
+        self.assertEqual(dat.std(),dat.nanstd())
         assert_array_almost_equal(dat.std(0),dat.nanstd(0))
-        self.assertEquals(dat.nanstd(0).name, 'randvals')
+        self.assertEqual(dat.nanstd(0).name, 'randvals')
         assert_array_almost_equal(dat.std(1),dat.nanstd(1))
-        self.assertEquals(dat.nanstd(1).name, 'randvals')
+        self.assertEqual(dat.nanstd(1).name, 'randvals')
         assert_array_almost_equal(dat.std(2),dat.nanstd(2))
-        self.assertEquals(dat.nanstd(2).name, 'randvals')
+        self.assertEqual(dat.nanstd(2).name, 'randvals')
         # test ddof:
         for d in range(3):
-            self.assertEquals(dat.std(ddof=d),dat.nanstd(ddof=d))
+            self.assertEqual(dat.std(ddof=d),dat.nanstd(ddof=d))
             assert_array_almost_equal(dat.std(0,ddof=d),dat.nanstd(0,ddof=d))
-            self.assertEquals(dat.nanstd(0,ddof=d).name, 'randvals')
+            self.assertEqual(dat.nanstd(0,ddof=d).name, 'randvals')
             assert_array_almost_equal(dat.std(1,ddof=d),dat.nanstd(1,ddof=d))
-            self.assertEquals(dat.nanstd(1,ddof=d).name, 'randvals')
+            self.assertEqual(dat.nanstd(1,ddof=d).name, 'randvals')
             assert_array_almost_equal(dat.std(2,ddof=d),dat.nanstd(2,ddof=d))
-            self.assertEquals(dat.nanstd(2,ddof=d).name, 'randvals')
+            self.assertEqual(dat.nanstd(2,ddof=d).name, 'randvals')
 
         # Now, make sure results are as expected with NaN present:
         arr[0,0,0] = np.nan
         dat = AttrArray(arr,name='randvals')
-        self.assertEquals(dat[~np.isnan(dat)].std(),dat.nanstd())
+        self.assertEqual(dat[~np.isnan(dat)].std(),dat.nanstd())
         for i in range(len(arr.shape)):
             tmp1 = dat.std(i)
             tmp1[0,0] = 0
             tmp2 = dat.nanstd(i)
             tmp2[0,0] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
         arr[3,6,2] = np.nan
         dat = AttrArray(arr,name='randvals')
-        self.assertEquals(dat[~np.isnan(dat)].std(),dat.nanstd())
+        self.assertEqual(dat[~np.isnan(dat)].std(),dat.nanstd())
         tmp1 = dat.std(0)
         tmp1[0,0] = 0
         tmp1[6,2] = 0
@@ -167,7 +167,7 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[6,2] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')
         tmp1 = dat.std(1)
         tmp1[0,0] = 0
         tmp1[3,2] = 0
@@ -175,7 +175,7 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[3,2] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')
         tmp1 = dat.std(2)
         tmp1[0,0] = 0
         tmp1[3,6] = 0
@@ -183,10 +183,10 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[3,6] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')
         # Test ddof:
         for d in range(3):
-            self.assertEquals(dat[~np.isnan(dat)].std(ddof=d),dat.nanstd(ddof=d))
+            self.assertEqual(dat[~np.isnan(dat)].std(ddof=d),dat.nanstd(ddof=d))
             tmp1 = dat.std(0,ddof=d)
             tmp1[0,0] = 0
             tmp1[6,2] = 0
@@ -194,7 +194,7 @@ class test_AttrArray(TestCase):
             tmp2[0,0] = 0
             tmp2[6,2] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
             tmp1 = dat.std(1,ddof=d)
             tmp1[0,0] = 0
             tmp1[3,2] = 0
@@ -202,7 +202,7 @@ class test_AttrArray(TestCase):
             tmp2[0,0] = 0
             tmp2[3,2] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
             tmp1 = dat.std(2,ddof=d)
             tmp1[0,0] = 0
             tmp1[3,6] = 0
@@ -210,44 +210,44 @@ class test_AttrArray(TestCase):
             tmp2[0,0] = 0
             tmp2[3,6] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
 
     def test_nanvar(self):
         arr = np.random.rand(10,10,10)
         dat = AttrArray(arr,name='randvals')
         # if there are no NaN's, var and nanvar should give equal
         # results:
-        self.assertEquals(dat.var(),dat.nanvar())
+        self.assertEqual(dat.var(),dat.nanvar())
         assert_array_almost_equal(dat.var(0),dat.nanvar(0))
-        self.assertEquals(dat.nanvar(0).name, 'randvals')
+        self.assertEqual(dat.nanvar(0).name, 'randvals')
         assert_array_almost_equal(dat.var(1),dat.nanvar(1))
-        self.assertEquals(dat.nanvar(1).name, 'randvals')
+        self.assertEqual(dat.nanvar(1).name, 'randvals')
         assert_array_almost_equal(dat.var(2),dat.nanvar(2))
-        self.assertEquals(dat.nanvar(2).name, 'randvals')
+        self.assertEqual(dat.nanvar(2).name, 'randvals')
         # test ddof:
         for d in range(3):
-            self.assertEquals(dat.var(ddof=d),dat.nanvar(ddof=d))
+            self.assertEqual(dat.var(ddof=d),dat.nanvar(ddof=d))
             assert_array_almost_equal(dat.var(0,ddof=d),dat.nanvar(0,ddof=d))
-            self.assertEquals(dat.nanvar(0,ddof=d).name, 'randvals')
+            self.assertEqual(dat.nanvar(0,ddof=d).name, 'randvals')
             assert_array_almost_equal(dat.var(1,ddof=d),dat.nanvar(1,ddof=d))
-            self.assertEquals(dat.nanvar(1,ddof=d).name, 'randvals')
+            self.assertEqual(dat.nanvar(1,ddof=d).name, 'randvals')
             assert_array_almost_equal(dat.var(2,ddof=d),dat.nanvar(2,ddof=d))
-            self.assertEquals(dat.nanvar(2,ddof=d).name, 'randvals')
+            self.assertEqual(dat.nanvar(2,ddof=d).name, 'randvals')
 
         # Now, make sure results are as expected with NaN present:
         arr[0,0,0] = np.nan
         dat = AttrArray(arr,name='randvals')
-        self.assertEquals(dat[~np.isnan(dat)].var(),dat.nanvar())
+        self.assertEqual(dat[~np.isnan(dat)].var(),dat.nanvar())
         for i in range(len(arr.shape)):
             tmp1 = dat.var(i)
             tmp1[0,0] = 0
             tmp2 = dat.nanvar(i)
             tmp2[0,0] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
         arr[3,6,2] = np.nan
         dat = AttrArray(arr,name='randvals')
-        self.assertEquals(dat[~np.isnan(dat)].var(),dat.nanvar())
+        self.assertEqual(dat[~np.isnan(dat)].var(),dat.nanvar())
         tmp1 = dat.var(0)
         tmp1[0,0] = 0
         tmp1[6,2] = 0
@@ -255,7 +255,7 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[6,2] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')
         tmp1 = dat.var(1)
         tmp1[0,0] = 0
         tmp1[3,2] = 0
@@ -263,7 +263,7 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[3,2] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')
         tmp1 = dat.var(2)
         tmp1[0,0] = 0
         tmp1[3,6] = 0
@@ -271,10 +271,10 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[3,6] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')
         # Test ddof:
         for d in range(3):
-            self.assertEquals(dat[~np.isnan(dat)].var(ddof=d),dat.nanvar(ddof=d))
+            self.assertEqual(dat[~np.isnan(dat)].var(ddof=d),dat.nanvar(ddof=d))
             tmp1 = dat.var(0,ddof=d)
             tmp1[0,0] = 0
             tmp1[6,2] = 0
@@ -282,7 +282,7 @@ class test_AttrArray(TestCase):
             tmp2[0,0] = 0
             tmp2[6,2] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
             tmp1 = dat.var(1,ddof=d)
             tmp1[0,0] = 0
             tmp1[3,2] = 0
@@ -290,7 +290,7 @@ class test_AttrArray(TestCase):
             tmp2[0,0] = 0
             tmp2[3,2] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
             tmp1 = dat.var(2,ddof=d)
             tmp1[0,0] = 0
             tmp1[3,6] = 0
@@ -298,34 +298,34 @@ class test_AttrArray(TestCase):
             tmp2[0,0] = 0
             tmp2[3,6] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
 
     def test_nanmean(self):
         arr = np.random.rand(10,10,10)
         dat = AttrArray(arr,name='randvals')
         # if there are no NaN's, mean and nanmean should give equal
         # results:
-        self.assertEquals(dat.mean(),dat.nanmean())
+        self.assertEqual(dat.mean(),dat.nanmean())
         assert_array_almost_equal(dat.mean(0),dat.nanmean(0))
-        self.assertEquals(dat.nanmean(0).name, 'randvals')
+        self.assertEqual(dat.nanmean(0).name, 'randvals')
         assert_array_almost_equal(dat.mean(1),dat.nanmean(1))
-        self.assertEquals(dat.nanmean(1).name, 'randvals')
+        self.assertEqual(dat.nanmean(1).name, 'randvals')
         assert_array_almost_equal(dat.mean(2),dat.nanmean(2))
-        self.assertEquals(dat.nanmean(2).name, 'randvals')
+        self.assertEqual(dat.nanmean(2).name, 'randvals')
         # Now, make sure results are as expected with NaN present:
         arr[0,0,0] = np.nan
         dat = AttrArray(arr,name='randvals')
-        self.assertEquals(dat[~np.isnan(dat)].mean(),dat.nanmean())
+        self.assertEqual(dat[~np.isnan(dat)].mean(),dat.nanmean())
         for i in range(len(arr.shape)):
             tmp1 = dat.mean(i)
             tmp1[0,0] = 0
             tmp2 = dat.nanmean(i)
             tmp2[0,0] = 0
             assert_array_almost_equal(tmp1,tmp2)
-            self.assertEquals(tmp2.name, 'randvals')
+            self.assertEqual(tmp2.name, 'randvals')
         arr[3,6,2] = np.nan
         dat = AttrArray(arr,name='randvals')
-        self.assertEquals(dat[~np.isnan(dat)].mean(),dat.nanmean())
+        self.assertEqual(dat[~np.isnan(dat)].mean(),dat.nanmean())
         tmp1 = dat.mean(0)
         tmp1[0,0] = 0
         tmp1[6,2] = 0
@@ -333,7 +333,7 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[6,2] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')
         tmp1 = dat.mean(1)
         tmp1[0,0] = 0
         tmp1[3,2] = 0
@@ -341,7 +341,7 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[3,2] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')
         tmp1 = dat.mean(2)
         tmp1[0,0] = 0
         tmp1[3,6] = 0
@@ -349,4 +349,4 @@ class test_AttrArray(TestCase):
         tmp2[0,0] = 0
         tmp2[3,6] = 0
         assert_array_almost_equal(tmp1,tmp2)
-        self.assertEquals(tmp2.name, 'randvals')
+        self.assertEqual(tmp2.name, 'randvals')

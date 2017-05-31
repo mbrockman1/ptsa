@@ -202,7 +202,7 @@ al. (2003)."""
     # XXX verify the 's' argument
     # needed to change so that fMRI dat would work
     rep = scipy.interpolate.splrep(t,d2,s=.0)
-    s = scipy.interpolate.splev(range(len(data)),rep)
+    s = scipy.interpolate.splev(list(range(len(data))),rep)
     # plot(1:length(data),data,'b-',1:length(data),s,'k-',t,d2,'r--');  
 
     return s

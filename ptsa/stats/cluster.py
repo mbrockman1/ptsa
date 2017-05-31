@@ -78,7 +78,7 @@ def find_clusters(x, threshold, tail=0, connectivity=None):
         if x.ndim == 1:
             clusters = ndimage.find_objects(labels, n_labels)
             sums = ndimage.measurements.sum(x, labels,
-                                            index=range(1, n_labels + 1))
+                                            index=list(range(1, n_labels + 1)))
         else:
             clusters = list()
             sums = np.empty(n_labels)

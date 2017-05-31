@@ -1,5 +1,5 @@
 from pylab import loadtxt, rand, figure, xlim, ylim, show
-from ptsa.plotting.topoplot import topoplot
+from ptsa.plotting.topo import topoplot
 
 def getElecs():
     # read in testLocs.dat that was generated in Matlab as follows:
@@ -9,7 +9,7 @@ def getElecs():
     # save testLocs.dat tmp -ascii
     locs=loadtxt("testLocs.dat")
     theta=-locs[0]+90
-    
+
     #theta=deg2rad(theta)
     radius=locs[1]#*(headRad/0.5)
     #x,y=pol2cart(theta,radius,radians=False)

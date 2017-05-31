@@ -50,7 +50,7 @@ def reshape_from_2d(data,axis,dshape):
     ret = np.reshape(data,tuple(tdshape))
 
     # figure out how to retranspose the matrix
-    vals = range(rnk)
+    vals = list(range(rnk))
     olddims = vals[:axis] + [rnk-1] +vals[axis:rnk-1]
     ret = np.transpose(ret,tuple(olddims))
     
@@ -66,7 +66,7 @@ def repeat_to_match_dims(x,y,axis=-1):
     if axis < 0: 
         axis = axis + rnk
 
-    for d in range(axis)+range(axis+1,rnk):
+    for d in list(range(axis))+list(range(axis+1,rnk)):
         # add the dimension
         x = np.expand_dims(x,d)
         # repeat to fill that dim
@@ -231,7 +231,7 @@ def getargspec(obj):
     See http://kbyanc.blogspot.com/2007/07/python-more-generic-getargspec.html
     """
     if not callable(obj):
-        raise TypeError, "%s is not callable" % type(obj)
+        raise TypeError("%s is not callable" % type(obj))
     try:
         if inspect.isfunction(obj):
             return inspect.getargspec(obj)
@@ -243,7 +243,7 @@ def getargspec(obj):
             # inspect.getargspec() returns for methods.
             # NB: We use im_func so we work with
             #     instancemethod objects also.
-            spec = list(inspect.getargspec(obj.im_func))
+            spec = list(inspect.getargspec(obj.__func__))
             spec[0] = spec[0][1:]
             return spec
         elif inspect.isclass(obj):
@@ -263,6 +263,5 @@ def getargspec(obj):
         # care what aspect(s) of that object we actually
         # examined).
         pass
-    raise NotImplementedError, \
-          "do not know how to get argument list for %s" % \
-          type(obj)
+    raise NotImplementedError("do not know how to get argument list for %s" % \
+          type(obj))

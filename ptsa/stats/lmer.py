@@ -54,7 +54,7 @@ else:
 #import pandas.rpy.common as com
 
 # load ptsa clustering
-import cluster
+from . import cluster
 
 
 def lmer_feature(formula_str, dat, perms=None, 
@@ -147,7 +147,7 @@ class LMER():
             factors = {}
         # add in missingarg for any potential factor not provided
         for k in df.dtype.names:
-            if isinstance(df[k][0],str) and not factors.has_key(k):
+            if isinstance(df[k][0],str) and k not in factors:
                 factors[k] = MissingArg
                 
         for f in factors:
@@ -285,7 +285,7 @@ def procrustes(orig_lv, boot_lv):
 def pick_stable_features(R, shape, nboot=500, connectivity=None):
     # generate the boots
     boots = [np.random.random_integers(0,len(R)-1,len(R))
-             for i in xrange(nboot)]
+             for i in range(nboot)]
 
     # run tfce on each subj and cond
     if True:
@@ -310,7 +310,7 @@ def pick_stable_features(R, shape, nboot=500, connectivity=None):
 def sparse_stable_svd(R, nboot=50):
     # generate the boots
     boots = [np.random.random_integers(0,len(R)-1,len(R))
-             for i in xrange(nboot)]
+             for i in range(nboot)]
 
     # calc the original SVD
     U, s, Vh = np.linalg.svd(np.concatenate(R), full_matrices=False)
@@ -504,7 +504,7 @@ def _eval_model(model_id, perm=None, boot=None):
             m_full = lmer._ms
             ll_null = []
             ll_full = []
-            for bi in xrange(mm._num_null_boot):
+            for bi in range(mm._num_null_boot):
                 # sim new data
                 #Dw_sim = np.array(r['simulate'](m_null))[0]
                 Dw_sim = r['simulate'](m_null)
@@ -537,27 +537,27 @@ def _eval_model(model_id, perm=None, boot=None):
         temp_ll[0] = 0.0
         res.append((temp_t,temp_ll))
 
-    tvals,log_likes = zip(*res)
+    tvals,log_likes = list(zip(*res))
     tvals = np.concatenate(tvals)
     log_likes = np.concatenate(log_likes)
     if perm is None and boot is None and mm._null_formula_str:
-        tvals_null,log_likes_null = zip(*res_null)
+        tvals_null,log_likes_null = list(zip(*res_null))
         log_likes_null = np.concatenate(log_likes_null)
 
-        print "Like Ratio: ", 2*(log_likes.sum() - log_likes_null.sum())
-        print "Like Ratio Scaled: ", 2*(np.dot(log_likes,ss[ss>0.0]/_ss) - 
-                                        np.dot(log_likes_null,ss[ss>0.0]/_ss))
-        print "Like Ratio Comb: ", np.dot(2*(log_likes-log_likes_null),ss[ss>0.0]/_ss)
+        print("Like Ratio: ", 2*(log_likes.sum() - log_likes_null.sum()))
+        print("Like Ratio Scaled: ", 2*(np.dot(log_likes,ss[ss>0.0]/_ss) - 
+                                        np.dot(log_likes_null,ss[ss>0.0]/_ss)))
+        print("Like Ratio Comb: ", np.dot(2*(log_likes-log_likes_null),ss[ss>0.0]/_ss))
 
         ll_null_boot = np.vstack(ll_null_boot)
         ll_full_boot = np.vstack(ll_full_boot)
 
         lr = 2*(log_likes-log_likes_null)
         lr_boot = 2*(ll_full_boot-ll_null_boot)
-        print "Like Boot: ", np.dot(lr_boot, ss[ss>0.0]/_ss)
+        print("Like Boot: ", np.dot(lr_boot, ss[ss>0.0]/_ss))
         sscale = ss/ss.sum()
         mg = np.dot([((lr_boot[:,ii]-lr[ii])>0).sum() for ii in range(20)],sscale)
-        print "prop: ", mg/float(mm._num_null_boot)
+        print("prop: ", mg/float(mm._num_null_boot))
         1/0
 
     # # get the term names (skip the intercept)
@@ -708,7 +708,7 @@ class MELD(object):
         self._re_group = re_group
         if isinstance(ind_data, dict):
             # groups are the keys
-            self._groups = np.array(ind_data.keys())
+            self._groups = np.array(list(ind_data.keys()))
         else:
             # groups need to be extracted from the recarray
             self._groups = np.unique(ind_data[re_group])
@@ -764,7 +764,7 @@ class MELD(object):
                     sys.stdout.write('Ranking %s...'%(str(g)))
                     sys.stdout.flush()
 
-                for i in xrange(self._D[g].shape[1]):
+                for i in range(self._D[g].shape[1]):
                     self._D[g][:,i] = rankdata(self._D[g][:,i])
 
             # reshape M, so we don't have to do it repeatedly
@@ -793,7 +793,7 @@ class MELD(object):
                                          #for c in cols if not 'Intercept' in c]).T
 
             if use_ranks:
-                for i in xrange(self._A[g].shape[1]):
+                for i in range(self._A[g].shape[1]):
                     self._A[g][:,i] = rankdata(self._A[g][:,i])
 
             # normalize A
@@ -856,14 +856,14 @@ class MELD(object):
 
         # clean up memmapping files
         if self._memmap:
-            for g in self._M.keys():
+            for g in list(self._M.keys()):
                 try:
                     filename = self._M[g].filename 
                     del self._M[g]
                     os.remove(filename)
                 except OSError:
                     pass
-            for g in self._D.keys():
+            for g in list(self._D.keys()):
                 try:
                     filename = self._D[g].filename 
                     del self._D[g]
@@ -873,7 +873,7 @@ class MELD(object):
 
         # clean self out of global model list
         global _global_meld
-        if _global_meld and _global_meld.has_key(my_id):
+        if _global_meld and my_id in _global_meld:
             del _global_meld[my_id]
 
 
@@ -896,7 +896,7 @@ class MELD(object):
 
             # gen the perms ahead of time
             perms = []
-            for p in xrange(nperms):
+            for p in range(nperms):
                 ind = {}
                 for k in self._groups:
                     # gen a perm for that subj
@@ -953,7 +953,7 @@ class MELD(object):
 
             # calculate the boots with replacement
             boots = [np.random.random_integers(0,len(self._R)-1,len(self._R))
-                     for i in xrange(nboots)]
+                     for i in range(nboots)]
 
         if verbose>0:
             sys.stdout.write('Running %d bootstraps...\n'%nboots)
@@ -1115,7 +1115,7 @@ if __name__ == '__main__':
 
     # data with observations in first dimension and features on the remaining
     dep_data = np.random.rand(len(s),*nfeat)
-    print 'Data shape:',dep_data.shape
+    print('Data shape:',dep_data.shape)
 
     # now with signal
     # add in some signal
@@ -1161,12 +1161,12 @@ if __name__ == '__main__':
     # #print "BR num sig:",[(n,(me.fdr_boot[n]<=.05).sum())
     # #                     for n in brs.dtype.names]
 
-    print
-    print "Now with signal!"
-    print "----------------"
-    print "Terms:",me_s.terms
-    print "t-vals:",me_s.t_terms
-    print "term p-vals:",me_s.pvals
+    print()
+    print("Now with signal!")
+    print("----------------")
+    print("Terms:",me_s.terms)
+    print("t-vals:",me_s.t_terms)
+    print("term p-vals:",me_s.pvals)
     #brs_s = me_s.boot_ratio
     #print "Bootstrap ratio shape:",brs_s.shape
     #print "BR num sig:",[(n,(me_s.fdr_boot[n]<=.05).sum())

@@ -9,11 +9,11 @@
 
 class DataWrapper(object):
     """
-    Base class to provide interface to timeseries data.  
+    Base class to provide interface to timeseries data.
     """
     def _load_data(self,channel,eventOffsets,dur_samp,offset_samp):
         raise NotImplementedError
-    
+
     def get_event_data(self,channels,eventOffsets,
                        dur,offset,buf,
                        resampledRate=None,
@@ -37,7 +37,7 @@ class DataWrapper(object):
         filtOrder: Order of the filter.
         keepBuffer: Whether to keep the buffer when returning the data.
         """
-        
+
         # set event durations from rate
         # get the samplesize in ms
         samplesize = 1./self.samplerate
@@ -48,7 +48,7 @@ class DataWrapper(object):
 
         # finally get the duration necessary to cover the desired span
         dur_samp = int(np.ceil((dur+offset - samplesize*.5)/samplesize)) - offset_samp + 1
-        
+
         # add in the buffer
         dur_samp += 2*buf_samp
         offset_samp -= buf_samp
@@ -61,13 +61,13 @@ class DataWrapper(object):
         sampEnd = sampStart + (dur_samp-1)*samplesize
         timeRange = np.linspace(sampStart,sampEnd,dur_samp)
 
-	# make it a timeseries
+	    # make it a timeseries
         # if isinstance(eventInfo,TsEvents):
         #     dims = [Dim('event', eventInfo.data, 'event'),
         #             Dim('time',timeRange)]
         # else:
         #     dims = [Dim('eventOffsets', eventOffsets, 'samples'),
-        #             Dim('time',timeRange)]            
+        #             Dim('time',timeRange)]
         dims = [Dim(eventOffsets,'eventOffsets'),
                 Dim(timeRange,'time')]
         eventdata = TimeSeries(np.asarray(eventdata),

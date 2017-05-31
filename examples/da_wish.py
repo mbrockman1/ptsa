@@ -16,9 +16,9 @@ if __name__ == "__main__":
     # select some data
     ind = ((dat['time'] > 10) &
            ((dat['events']<10) | (dat['events']>20)) &
-           (dat['freqs'].is_in(range(0,10,2))))
+           (dat['freqs'].is_in(list(range(0,10,2)))))
 
     subdat = dat[ind]
 
-    print dat.shape
-    print subdat.shape
+    print(dat.shape)
+    print(subdat.shape)

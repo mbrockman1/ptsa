@@ -90,9 +90,9 @@ class test_TimeSeries(TestCase):
         # fewest params
         ts = TimeSeries(self.dat200,'time',200,dims = self.dims200)
         np.testing.assert_equal(ts[:], self.dat200[:])
-        self.assertEquals(ts.shape, self.dat200.shape)
-        self.assertEquals(ts.taxis, len(self.dat200.shape)-1)
-        self.assertEquals(ts.samplerate,200)
+        self.assertEqual(ts.shape, self.dat200.shape)
+        self.assertEqual(ts.taxis, len(self.dat200.shape)-1)
+        self.assertEqual(ts.samplerate,200)
         self.assertRaises(ValueError,TimeSeries,self.dat200,
                           'bla',200,dims=self.dims200)
         self.assertRaises(ValueError,TimeSeries,self.dat200,
@@ -104,11 +104,11 @@ class test_TimeSeries(TestCase):
         numsamp = 4*200
         ts = TimeSeries(self.dat200,'time',200, dims=self.dims200)
         ts_nobuff = ts.remove_buffer(1)
-        self.assertEquals(ts_nobuff.shape[ts_nobuff.taxis],numsamp-2*buf)
-        self.assertEquals(len(ts_nobuff['time']),numsamp-2*buf)
+        self.assertEqual(ts_nobuff.shape[ts_nobuff.taxis],numsamp-2*buf)
+        self.assertEqual(len(ts_nobuff['time']),numsamp-2*buf)
         ts_nobuff = ts.remove_buffer((1,1))
-        self.assertEquals(ts_nobuff.shape[ts_nobuff.taxis],numsamp-2*buf)
-        self.assertEquals(len(ts_nobuff['time']),numsamp-2*buf)
+        self.assertEqual(ts_nobuff.shape[ts_nobuff.taxis],numsamp-2*buf)
+        self.assertEqual(len(ts_nobuff['time']),numsamp-2*buf)
         # make sure that negative durations throw exception
         self.assertRaises(ValueError,ts.remove_buffer,-1)
 

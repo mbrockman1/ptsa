@@ -128,7 +128,7 @@ class AttrArray(np.ndarray):
                 "The attribute '_required_attrs' is read-only!")
         # set the value in the attribute list
         if self._required_attrs:
-            if (self._required_attrs.has_key(name) and
+            if (name in self._required_attrs and
                 (not isinstance(value,self._required_attrs[name]))):
                 raise AttributeError("Attribute '"+name +"' must be "+
                                      str(self._required_attrs[name])+
@@ -147,7 +147,7 @@ class AttrArray(np.ndarray):
 
         # update the attrs if necessary
         # CTW: shouln't _attr be always updated?
-        if self._attrs.has_key(name) or \
+        if name in self._attrs or \
                 (name != '_attrs' and not attr_existed):
             self._attrs[name] = value
 
@@ -158,11 +158,11 @@ class AttrArray(np.ndarray):
         if name == '_required_attrs':
             raise AttributeError(
                 "The attribute '_required_attrs' is read-only!")
-        if name in self._required_attrs.keys():
+        if name in list(self._required_attrs.keys()):
             raise AttributeError("Attribute '"+name +"' is required, and cannot "+
                                  "be deleted!")
         ret = np.ndarray.__delattr__(self, name)
-        if self._attrs.has_key(name):
+        if name in self._attrs:
             del self._attrs[name]
         return ret
 
@@ -181,8 +181,8 @@ class AttrArray(np.ndarray):
         # if there are no required attributes, no check is required:
         if self._required_attrs is None: return
         
-        for name in self._required_attrs.keys():
-            if ((not self._attrs.has_key(name)) or
+        for name in list(self._required_attrs.keys()):
+            if ((name not in self._attrs) or
                 (not isinstance(self._attrs[name], self._required_attrs[name]))):
                 raise AttributeError("Attribute '"+name+"' is required, and "+
                                      "must be "+str(self._required_attrs[name]))

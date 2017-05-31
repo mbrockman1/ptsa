@@ -44,8 +44,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PTSA'
-copyright = u'2009-2010, Per B. Sederberg & Christoph T. Weidemann'
+project = 'PTSA'
+copyright = '2009-2010, Per B. Sederberg & Christoph T. Weidemann'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -171,8 +171,8 @@ htmlhelp_basename = 'PTSAdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'PTSA.tex', ur'PTSA Documentation',
-   ur'Per B. Sederberg and Christoph T. Weidemann', 'manual'),
+  ('index', 'PTSA.tex', r'PTSA Documentation',
+   r'Per B. Sederberg and Christoph T. Weidemann', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

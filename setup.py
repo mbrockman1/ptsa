@@ -2,7 +2,7 @@
 try:
     import numpy
 except ImportError:
-    print 'Numpy is required to build PTSA. Please install Numpy before proceeding'
+    print('Numpy is required to build PTSA. Please install Numpy before proceeding')
     import sys
     sys.exit(1)
 
@@ -14,7 +14,7 @@ import os
 import sys
 
 # get the version loaded as vstr
-execfile('ptsa/versionString.py')
+exec(compile(open('ptsa/versionString.py').read(), 'ptsa/versionString.py', 'exec'))
 
 # set up extensions
 ext_modules = []

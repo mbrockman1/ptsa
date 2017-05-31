@@ -162,8 +162,8 @@ class DataDict(BaseDict):
 		fields = [fields]
 	    for field in fields:
 		# remove the buffer
-		self[field] = self[field].take(range(self.bufLen,
-						     self[field].shape[axis]-self.bufLen),
+		self[field] = self[field].take(list(range(self.bufLen,
+						     self[field].shape[axis]-self.bufLen)),
 					       axis)
 	    # set the time range with no buffer
 	    self.time = N.linspace(self.OffsetMS,
@@ -292,8 +292,8 @@ class EegTimeSeries_old(object):
 	# see if remove the anything
 	if self.buffer>0:
             # remove the buffer
-            self.data = self.data.take(range(self.buffer,
-                                             self.shape[self.tdim]-self.buffer),self.tdim)
+            self.data = self.data.take(list(range(self.buffer,
+                                             self.shape[self.tdim]-self.buffer)),self.tdim)
 
             # reset buffer to indicate it was removed
 	    self.buffer = 0
