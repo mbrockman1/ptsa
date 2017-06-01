@@ -7,12 +7,13 @@ are provided here until they are easily available in scipy.
 ################################################################################
 ################################################################################
 ###
-### scipy.signal.wavelets.morlet
+# scipy.signal.wavelets.morlet
 ###
 ################################################################################
 ################################################################################
 
 from scipy import linspace, pi, exp, zeros
+
 
 def morlet(M, w=5.0, s=1.0, complete=True):
     """Complex Morlet wavelet.
@@ -51,18 +52,18 @@ def morlet(M, w=5.0, s=1.0, complete=True):
     by f = 2*s*w*r / M where r is the sampling rate.
 
     """
-    x = linspace(-s*2*pi,s*2*pi,M)
-    output = exp(1j*w*x)
-    
+    x = linspace(-s * 2 * pi, s * 2 * pi, M)
+    output = exp(1j * w * x)
+
     if complete:
-        output -= exp(-0.5*(w**2))
-    
-    output *= exp(-0.5*(x**2)) * pi**(-0.25)
-    
+        output -= exp(-0.5 * (w**2))
+
+    output *= exp(-0.5 * (x**2)) * pi**(-0.25)
+
     return output
 
 ###
-### scipy.signal.wavelets.morlet()
+# scipy.signal.wavelets.morlet()
 ###
 ################################################################################
 ################################################################################

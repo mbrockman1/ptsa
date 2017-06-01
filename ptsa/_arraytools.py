@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 """
 Functions for acting on a axis of an array.
 """
@@ -80,7 +80,7 @@ def odd_ext(x, n, axis=-1):
         return x
     if n > x.shape[axis] - 1:
         raise ValueError(("The extension length n (%d) is too big. " +
-                         "It must not exceed x.shape[axis]-1, which is %d.")
+                          "It must not exceed x.shape[axis]-1, which is %d.")
                          % (n, x.shape[axis] - 1))
     left_end = axis_slice(x, start=0, stop=1, axis=axis)
     left_ext = axis_slice(x, start=n, stop=0, step=-1, axis=axis)
@@ -116,7 +116,7 @@ def even_ext(x, n, axis=-1):
         return x
     if n > x.shape[axis] - 1:
         raise ValueError(("The extension length n (%d) is too big. " +
-                         "It must not exceed x.shape[axis]-1, which is %d.")
+                          "It must not exceed x.shape[axis]-1, which is %d.")
                          % (n, x.shape[axis] - 1))
     left_ext = axis_slice(x, start=n, stop=0, step=-1, axis=axis)
     right_ext = axis_slice(x, start=-2, stop=-(n + 2), step=-1, axis=axis)

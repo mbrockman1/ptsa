@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -18,22 +18,23 @@ default_head_props = {'head_linewidth': 3,
                       'head_linecolor': 'black',
                       'nose_linewidth': 2,
                       'ear_linewidth': 2,
-                     }
+                      }
 default_label_props = {'ha': 'center',
                        'va': 'center'}
 default_sensor_props = {'marker': 'o',
-                        'c': 'k', 
+                        'c': 'k',
                         's': 8}
 default_contour_props = {'linewidths': 0,
                          'linestyle': '-',
-                         'colors': 'black',}
+                         'colors': 'black', }
 
-def topoplot(values=None, labels=None, sensors=None, axes=None, 
-             center=(0,0), nose_dir=0., radius=0.5,
+
+def topoplot(values=None, labels=None, sensors=None, axes=None,
+             center=(0, 0), nose_dir=0., radius=0.5,
              head_props=None, sensor_props=None,
-             label_props=None, 
+             label_props=None,
              contours=15, contour_props=None,
-             resolution=400, axis_props='off', 
+             resolution=400, axis_props='off',
              plot_mask='circular', plot_radius_buffer=.2,
              **kwargs):
     """
@@ -90,35 +91,35 @@ def topoplot(values=None, labels=None, sensors=None, axes=None,
         Optional keyword arguments to be passed on to contourf.
     """
 
-    if axes is not None: # axes are given
-        a=axes
-    else: # a new subplot is created
-        a=plt.subplot(1, 1, 1, aspect='equal')
+    if axes is not None:  # axes are given
+        a = axes
+    else:  # a new subplot is created
+        a = plt.subplot(1, 1, 1, aspect='equal')
 
     a.axis(axis_props)
-    
-    if True: # head should be plotted
+
+    if True:  # head should be plotted
         # deal with the head props
         hprops = default_head_props.copy()
         if not head_props is None:
             hprops.update(head_props)
 
         # Set up head
-        head = plt.Circle(center, radius, fill=False, 
+        head = plt.Circle(center, radius, fill=False,
                           linewidth=hprops['head_linewidth'],
                           edgecolor=hprops['head_linecolor'],
                           axes=a)
 
         # Nose:
-        nose_width = 0.18*radius
+        nose_width = 0.18 * radius
         # Distance from the center of the head to the point where the
         # nose touches the outline of the head:
-        nose_dist = np.cos(np.arcsin((nose_width/2.)/radius))*radius
+        nose_dist = np.cos(np.arcsin((nose_width / 2.) / radius)) * radius
         # Distance from the center of the head to the tip of the nose:
-        nose_tip_dist = 1.15*radius
+        nose_tip_dist = 1.15 * radius
         # Convert to polar coordinates for rotating:
         nose_polar_angle, nose_polar_radius = cart2pol(
-            np.array([-nose_width/2, 0, nose_width/2]),
+            np.array([-nose_width / 2, 0, nose_width / 2]),
             np.array([nose_dist, nose_tip_dist, nose_dist]))
         nose_polar_angle = nose_polar_angle + deg2rad(nose_dir)
         # And back to cartesian coordinates for plotting:
@@ -133,30 +134,30 @@ def topoplot(values=None, labels=None, sensors=None, axes=None,
                           axes=a)
 
         # Ears:
-        q = .04 # ear lengthening
+        q = .04  # ear lengthening
         ear_x = np.array(
-            [.497-.005, .510,.518, .5299, .5419, .54, .547,
-             .532, .510, .489-.005])*(radius/0.5)
+            [.497 - .005, .510, .518, .5299, .5419, .54, .547,
+             .532, .510, .489 - .005]) * (radius / 0.5)
         ear_y = np.array(
-            [q+.0555, q+.0775, q+.0783, q+.0746, q+.0555,
-             -.0055, -.0932, -.1313, -.1384, -.1199])*(radius/0.5)
+            [q + .0555, q + .0775, q + .0783, q + .0746, q + .0555,
+             -.0055, -.0932, -.1313, -.1384, -.1199]) * (radius / 0.5)
         # Convert to polar coordinates for rotating:
         rightear_polar_angle, rightear_polar_radius = cart2pol(ear_x, ear_y)
         leftear_polar_angle, leftear_polar_radius = cart2pol(-ear_x, ear_y)
-        rightear_polar_angle = rightear_polar_angle+deg2rad(nose_dir)
-        leftear_polar_angle = leftear_polar_angle+deg2rad(nose_dir)
+        rightear_polar_angle = rightear_polar_angle + deg2rad(nose_dir)
+        leftear_polar_angle = leftear_polar_angle + deg2rad(nose_dir)
         # And back to cartesian coordinates for plotting:
         rightear_x, rightear_y = pol2cart(rightear_polar_angle,
-                                         rightear_polar_radius)
+                                          rightear_polar_radius)
         leftear_x, leftear_y = pol2cart(leftear_polar_angle,
                                         leftear_polar_radius)
-        
+
         # Move ears with head:
         rightear_x = rightear_x + center[0]
         rightear_y = rightear_y + center[1]
         leftear_x = leftear_x + center[0]
         leftear_y = leftear_y + center[1]
-        
+
         ear_right = plt.Line2D(rightear_x, rightear_y,
                                color=hprops['head_linecolor'],
                                linewidth=hprops['ear_linewidth'],
@@ -168,7 +169,7 @@ def topoplot(values=None, labels=None, sensors=None, axes=None,
                               linewidth=hprops['ear_linewidth'],
                               solid_joinstyle='round',
                               solid_capstyle='round',
-                              axes=a)       
+                              axes=a)
         a.add_artist(head)
         a.add_artist(nose)
         a.add_artist(ear_right)
@@ -176,31 +177,31 @@ def topoplot(values=None, labels=None, sensors=None, axes=None,
 
     if sensors is None:
         if axes is None:
-            a.set_xlim(-radius*1.2+center[0], radius*1.2+center[0])
-            a.set_ylim(-radius*1.2+center[1], radius*1.2+center[1]) 
+            a.set_xlim(-radius * 1.2 + center[0], radius * 1.2 + center[0])
+            a.set_ylim(-radius * 1.2 + center[1], radius * 1.2 + center[1])
         return("No sensor locations specified!")
-    
+
     # Convert & rotate sensor locations:
-    angles = -sensors[0]+90
-    angles = angles+nose_dir
+    angles = -sensors[0] + 90
+    angles = angles + nose_dir
     angles = deg2rad(angles)
     radii = sensors[1]
     # expand or shrink electrode locations with radius of head:
-    radii = radii*(radius/0.5)
+    radii = radii * (radius / 0.5)
     # plotting radius is determined by largest sensor radius:
-    plot_radius = max(radii)*(1.0+plot_radius_buffer)
-    
+    plot_radius = max(radii) * (1.0 + plot_radius_buffer)
+
     # convert electrode locations to cartesian coordinates for plotting:
     x, y = pol2cart(angles, radii)
     x = x + center[0]
     y = y + center[1]
 
-    if True: # plot electrodes
+    if True:  # plot electrodes
         sprops = default_sensor_props.copy()
         if not sensor_props is None:
             sprops.update(sensor_props)
 
-        #a.plot(x,y,markerfacecolor=colors[1],marker='o',linestyle='')
+        # a.plot(x,y,markerfacecolor=colors[1],marker='o',linestyle='')
         a.scatter(x, y, zorder=10, **sprops)
 
     if not labels is None:
@@ -209,30 +210,29 @@ def topoplot(values=None, labels=None, sensors=None, axes=None,
             lprops.update(label_props)
 
         for i in range(len(labels)):
-            a.text(x[i],y[i],labels[i],**lprops)
+            a.text(x[i], y[i], labels[i], **lprops)
 
-        
     if values is None:
-        return #('No values to plot specified!')
-    if np.size(values) != np.size(sensors,1):
-        return('Numer of values to plot is different from number of sensors!'+
+        return  # ('No values to plot specified!')
+    if np.size(values) != np.size(sensors, 1):
+        return('Numer of values to plot is different from number of sensors!' +
                '\nNo values have been plotted!')
 
     # set the values
     z = values
 
     # resolution determines the number of interpolated points per unit
-    nx = round(resolution*plot_radius)
-    ny = round(resolution*plot_radius)
+    nx = round(resolution * plot_radius)
+    ny = round(resolution * plot_radius)
 
     # now set up the grid:
-    xi, yi = np.meshgrid(np.linspace(-plot_radius, plot_radius,nx),
-                         np.linspace(-plot_radius, plot_radius,ny))
+    xi, yi = np.meshgrid(np.linspace(-plot_radius, plot_radius, nx),
+                         np.linspace(-plot_radius, plot_radius, ny))
     # and move the center to coincide with the center of the head:
     xi = xi + center[0]
     yi = yi + center[1]
     # interploate points:
-    if plot_mask=='linear':
+    if plot_mask == 'linear':
         # masked = True means that no extrapolation outside the
         # electrode boundaries is made this effectively creates a mask
         # with a linear boundary (connecting the outer electrode
@@ -240,11 +240,11 @@ def topoplot(values=None, labels=None, sensors=None, axes=None,
         #zi = griddata(x,y,z,xi,yi,masked=True)
         #zi = griddata(x,y,z,xi,yi)
         pass
-    elif plot_mask=='circular':
-        npts = np.mean((nx,ny))*2
-        t = np.linspace(0, 2*np.pi,npts)[:-1]
-        x = np.r_[x, np.cos(t)*plot_radius]
-        y = np.r_[y, np.sin(t)*plot_radius]
+    elif plot_mask == 'circular':
+        npts = np.mean((nx, ny)) * 2
+        t = np.linspace(0, 2 * np.pi, npts)[:-1]
+        x = np.r_[x, np.cos(t) * plot_radius]
+        y = np.r_[y, np.sin(t) * plot_radius]
         z = np.r_[z, np.zeros(len(t))]
     else:
         # we need a custom mask:
@@ -272,16 +272,15 @@ def topoplot(values=None, labels=None, sensors=None, axes=None,
     # # If no colormap is specified, use default colormap:
     # if cmap is None:
     #     cmap = plt.get_cmap()
-        
+
     # make contours
     cprops = default_contour_props.copy()
     if not contour_props is None:
         cprops.update(contour_props)
- 
+
     if np.any(cprops['linewidths'] > 0):
         a.contour(xi, yi, zi, contours, **cprops)
 
     # make countour color patches:
     # a.contourf(xi, yi, zi, contours, cmap=cmap, extend='both')
     a.contourf(xi, yi, zi, contours, extend='both', **kwargs)
-

@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -11,120 +11,127 @@
 import numpy as np
 import os.path
 
-def reshape_to_2d(data,axis):
+
+def reshape_to_2d(data, axis):
     """Reshape data to 2D with specified axis as the 2nd dimension."""
     # get the shape, rank, and the length of the chosen axis
     dshape = data.shape
     rnk = len(dshape)
     n = dshape[axis]
     # convert negative axis to positive axis
-    if axis < 0: 
+    if axis < 0:
         axis = axis + rnk
     # determine the new order of the axes
-    newdims = np.r_[0:axis,axis+1:rnk,axis]
+    newdims = np.r_[0:axis, axis + 1:rnk, axis]
 
     # reshape and transpose the data
-    newdata = np.reshape(np.transpose(data,tuple(newdims)),
-                         (np.prod(dshape,axis=0)/n,n))
-    
+    newdata = np.reshape(np.transpose(data, tuple(newdims)),
+                         (np.prod(dshape, axis=0) / n, n))
+
     # make sure we have a copy
     #newdata = newdata.copy()
 
     return newdata
 
-def reshape_from_2d(data,axis,dshape):
+
+def reshape_from_2d(data, axis, dshape):
     """Reshape data from 2D back to specified dshape."""
 
     # set the rank of the array
     rnk = len(dshape)
 
     # fix negative axis to be positive
-    if axis < 0: 
+    if axis < 0:
         axis = axis + rnk
 
     # determine the dims from reshape_to_2d call
-    newdims = np.r_[0:axis,axis+1:rnk,axis]
+    newdims = np.r_[0:axis, axis + 1:rnk, axis]
 
     # determine the transposed shape and reshape it back
-    tdshape = np.take(dshape,newdims,0)
-    ret = np.reshape(data,tuple(tdshape))
+    tdshape = np.take(dshape, newdims, 0)
+    ret = np.reshape(data, tuple(tdshape))
 
     # figure out how to retranspose the matrix
     vals = list(range(rnk))
-    olddims = vals[:axis] + [rnk-1] +vals[axis:rnk-1]
-    ret = np.transpose(ret,tuple(olddims))
-    
+    olddims = vals[:axis] + [rnk - 1] + vals[axis:rnk - 1]
+    ret = np.transpose(ret, tuple(olddims))
+
     # make sure we have a copy
     #ret = ret.copy()
     return ret
 
-def repeat_to_match_dims(x,y,axis=-1):
-    
+
+def repeat_to_match_dims(x, y, axis=-1):
+
     rnk = len(y.shape)
-    
+
     # convert negative axis to positive axis
-    if axis < 0: 
+    if axis < 0:
         axis = axis + rnk
 
-    for d in list(range(axis))+list(range(axis+1,rnk)):
+    for d in list(range(axis)) + list(range(axis + 1, rnk)):
         # add the dimension
-        x = np.expand_dims(x,d)
+        x = np.expand_dims(x, d)
         # repeat to fill that dim
-        x = x.repeat(y.shape[d],d)
+        x = x.repeat(y.shape[d], d)
 
     return x
 
 
 def deg2rad(degrees):
     """Convert degrees to radians."""
-    return degrees/180.*np.math.pi
+    return degrees / 180. * np.math.pi
+
 
 def rad2deg(radians):
     """Convert radians to degrees."""
-    return radians/np.math.pi*180.
+    return radians / np.math.pi * 180.
 
-def pol2cart(theta,radius,z=None,radians=True):
+
+def pol2cart(theta, radius, z=None, radians=True):
     """Converts corresponding angles (theta), radii, and (optional) height (z)
     from polar (or, when height is given, cylindrical) coordinates
     to Cartesian coordinates x, y, and z.
     Theta is assumed to be in radians, but will be converted
     from degrees if radians==False."""
     if radians:
-        x = radius*np.cos(theta)
-        y = radius*np.sin(theta)
+        x = radius * np.cos(theta)
+        y = radius * np.sin(theta)
     else:
-        x = radius*np.cos(deg2rad(theta))
-        y = radius*np.sin(deg2rad(theta))
+        x = radius * np.cos(deg2rad(theta))
+        y = radius * np.sin(deg2rad(theta))
     if z is not None:
         # make sure we have a copy
-        z=z.copy()
-        return x,y,z
+        z = z.copy()
+        return x, y, z
     else:
-        return x,y
+        return x, y
 
-def cart2pol(x,y,z=None,radians=True):
+
+def cart2pol(x, y, z=None, radians=True):
     """Converts corresponding Cartesian coordinates x, y, and (optional) z
     to polar (or, when z is given, cylindrical) coordinates
     angle (theta), radius, and z.
     By default theta is returned in radians, but will be converted
-    to degrees if radians==False."""    
+    to degrees if radians==False."""
     if radians:
-        theta = np.arctan2(y,x)
+        theta = np.arctan2(y, x)
     else:
-        theta = rad2deg(np.arctan2(y,x))
-    radius = np.hypot(x,y)
+        theta = rad2deg(np.arctan2(y, x))
+    radius = np.hypot(x, y)
     if z is not None:
         # make sure we have a copy
-        z=z.copy()
-        return theta,radius,z
+        z = z.copy()
+        return theta, radius, z
     else:
-        return theta,radius
+        return theta, radius
 
-def lock_file(filename,lockdirpath=None,lockdirname=None):
+
+def lock_file(filename, lockdirpath=None, lockdirname=None):
     if lockdirname is None:
-        lockdirname=filename+'.lock'
+        lockdirname = filename + '.lock'
     if not(lockdirpath is None):
-        lockdirname = lockdirpath+lockdirname
+        lockdirname = lockdirpath + lockdirname
     if os.path.exists(lockdirname):
         return False
     else:
@@ -134,26 +141,29 @@ def lock_file(filename,lockdirpath=None,lockdirname=None):
             return False
     return True
 
-def release_file(filename,lockdirpath=None,lockdirname=None):
+
+def release_file(filename, lockdirpath=None, lockdirname=None):
     if lockdirname is None:
-        lockdirname=filename+'.lock'
+        lockdirname = filename + '.lock'
     if not(lockdirpath is None):
-        lockdirname = lockdirpath+lockdirname
+        lockdirname = lockdirpath + lockdirname
     try:
         os.rmdir(lockdirname)
     except:
         return False
     return True
-      
+
+
 def next_pow2(n):
     """
     Returns p such that 2 ** p >= n
     """
     p = int(np.floor(np.log2(n)))
-    if 2 **  p == n:
+    if 2 ** p == n:
         return p
     else:
         return p + 1
+
 
 def pad_to_next_pow2(x, axis=0):
     """
@@ -170,7 +180,7 @@ def pad_to_next_pow2(x, axis=0):
         shape = list(x.shape)
         shape[axis] = to_pad
         padding = np.zeros(shape, dtype=x.dtype)
-        return np.concatenate([x,padding], axis=axis)
+        return np.concatenate([x, padding], axis=axis)
     else:
         # nothing needs to be done
         return x
@@ -190,11 +200,11 @@ def centered(arr, newsize):
     Returns
     -------
     A center slice into the input array
-    
+
     Note
     ----
     Adapted from scipy.signal.signaltools._centered
-        
+
     """
     # Don't make a copy of newsize when creating array:
     newsize = np.asarray(newsize)
@@ -208,6 +218,8 @@ def centered(arr, newsize):
 
 
 import inspect
+
+
 def getargspec(obj):
     """Get the names and default values of a callable's
        arguments
@@ -249,7 +261,7 @@ def getargspec(obj):
         elif inspect.isclass(obj):
             return getargspec(obj.__init__)
         elif isinstance(obj, object) and \
-             not isinstance(obj, type(arglist.__get__)):
+                not isinstance(obj, type(arglist.__get__)):
             # We already know the instance is callable,
             # so it must have a __call__ method defined.
             # Return the arguments it expects.
@@ -263,5 +275,5 @@ def getargspec(obj):
         # care what aspect(s) of that object we actually
         # examined).
         pass
-    raise NotImplementedError("do not know how to get argument list for %s" % \
-          type(obj))
+    raise NotImplementedError("do not know how to get argument list for %s" %
+                              type(obj))

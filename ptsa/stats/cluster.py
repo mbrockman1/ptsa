@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -15,6 +15,8 @@ from scipy import stats, sparse, ndimage, spatial
 from ptsa.helper import pol2cart
 
 # some functions from MNE
+
+
 def _get_components(x_in, connectivity):
     """get connected components from a mask and a connectivity matrix"""
     cs_graph_components = sparse.cs_graph_components
@@ -167,13 +169,14 @@ def sparse_dim_connectivity(dim_con):
 
     return cmat
 
+
 def simple_neighbors_1d(n):
     """
     Return connectivity for simple 1D neighbors.
     """
-    c = np.zeros((n,n))
-    c[np.triu_indices(n,1)] = 1
-    c[np.triu_indices(n,2)] = 0
+    c = np.zeros((n, n))
+    c[np.triu_indices(n, 1)] = 1
+    c[np.triu_indices(n, 2)] = 0
     return c
 
 
@@ -186,28 +189,28 @@ def sensor_neighbors(sensor_locs):
     sensor locs.
     """
     # see if loading from file
-    if isinstance(sensor_locs,str):
+    if isinstance(sensor_locs, str):
         # load from file
         locs = np.loadtxt(sensor_locs)
         theta = -locs[0] + 90
         radius = locs[1]
-        x,y = pol2cart(theta,radius,radians=False)
-        sensor_locs = np.vstack((x,y)).T
+        x, y = pol2cart(theta, radius, radians=False)
+        sensor_locs = np.vstack((x, y)).T
 
     # get info about the sensors
     nsens = len(sensor_locs)
-    
+
     # do the triangulation
     d = spatial.Delaunay(sensor_locs)
 
     # determine the neighbors
-    n = [np.unique(d.vertices[np.nonzero(d.vertices==i)[0]])
+    n = [np.unique(d.vertices[np.nonzero(d.vertices == i)[0]])
          for i in range(nsens)]
 
     # make the symmetric connectivity matrix
-    cn = np.zeros((nsens,nsens))
+    cn = np.zeros((nsens, nsens))
     for r in range(nsens):
-        cn[r,n[r]] = 1
+        cn[r, n[r]] = 1
 
     # only keep the upper
     cn[np.tril_indices(nsens)] = 0
@@ -216,7 +219,7 @@ def sensor_neighbors(sensor_locs):
     return cn
 
 
-def tfce(x, dt=.1, E=2/3., H=2.0, tail=0, connectivity=None):
+def tfce(x, dt=.1, E=2 / 3., H=2.0, tail=0, connectivity=None):
     """
     Threshold-Free Cluster Enhancement.
     """
@@ -232,26 +235,26 @@ def tfce(x, dt=.1, E=2/3., H=2.0, tail=0, connectivity=None):
     if tail == -1:
         sign = -1.0
         if (x < 0).sum() > 0:
-            trange = np.arange(x[x < 0].max(), x.min()-dt, -dt)
+            trange = np.arange(x[x < 0].max(), x.min() - dt, -dt)
     elif tail == 1:
         sign = 1.0
-        if (x > 0).sum()>0:
-            trange = np.arange(x[x > 0].min(), x.max()+dt, dt)
+        if (x > 0).sum() > 0:
+            trange = np.arange(x[x > 0].min(), x.max() + dt, dt)
     else:
         sign = 1.0
-        trange = np.arange(np.abs(x).min(), np.abs(x).max()+dt, dt)
+        trange = np.arange(np.abs(x).min(), np.abs(x).max() + dt, dt)
 
     # make own connectivity if not provided so that we have consistent
     # return values
     if connectivity is None:
         xr = x
-        #connectivity = sparse_dim_connectivity([simple_neighbors_1d(n)
+        # connectivity = sparse_dim_connectivity([simple_neighbors_1d(n)
         #                                        for n in x.shape])
     else:
         # integrate in steps of dt over the threshold
         # do reshaping once
         xr = x.reshape(np.prod(x.shape))
-        
+
     # get starting values for data (reshaped if needed)
     xt = np.zeros_like(xr)
     for thresh in trange:
@@ -263,7 +266,8 @@ def tfce(x, dt=.1, E=2/3., H=2.0, tail=0, connectivity=None):
         # add to values in clusters
         for c in clusts:
             # take into account direction of test
-            xt[c] += sign * np.power(c.sum(),E) * np.power(sign*thresh,H) * dt
+            xt[c] += sign * np.power(c.sum(), E) * \
+                np.power(sign * thresh, H) * dt
 
     # return the enhanced data, reshaped back
     if connectivity is None:

@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -29,6 +29,7 @@ packages = ('ptsa',
             'ptsa.plotting.tests',
             'ptsa.stats')
 
+
 def _test(method, level, verbosity, flags):
     """
     Run test suite with level and verbosity.
@@ -48,11 +49,16 @@ def _test(method, level, verbosity, flags):
     importall('ptsa')
     return getattr(NumpyTest(), method)(level, verbosity=2)
 
+
 def test(level=1, verbosity=1, flags=[]):
     _test('test', level=level, verbosity=verbosity, flags=flags)
-test.__doc__ = "Using NumpyTest test method.\n"+_test.__doc__
+
+
+test.__doc__ = "Using NumpyTest test method.\n" + _test.__doc__
+
 
 def testall(level=1, verbosity=1, flags=[]):
     _test('testall', level=level, verbosity=verbosity, flags=flags)
-testall.__doc__ = "Using NumpyTest testall method.\n"+_test.__doc__
 
+
+testall.__doc__ = "Using NumpyTest testall method.\n" + _test.__doc__

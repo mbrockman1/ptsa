@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -13,16 +13,16 @@ import sys
 
 #from filter import decimate
 #from helper import reshapeTo2D,reshapeFrom2D
-from ptsa.data import TimeSeries,Dim,Dims,DimData
+from ptsa.data import TimeSeries, Dim, Dims, DimData
 from ptsa import wavelet
 import scipy.stats as stats
 
 
-
 import pdb
 
-def tsZtransPow(freqs,tseries,zTrans=True,log=True,width=5,resample=None,
-                keepBuffer=False,verbose=False,to_return='both',freqDimName='freq'):
+
+def tsZtransPow(freqs, tseries, zTrans=True, log=True, width=5, resample=None,
+                keepBuffer=False, verbose=False, to_return='both', freqDimName='freq'):
     """
     Calculate z-transformed power (and optionally phase) on a
     TimeSeries, returning new TimeSeries instances.
@@ -36,28 +36,28 @@ def tsZtransPow(freqs,tseries,zTrans=True,log=True,width=5,resample=None,
 
     # Get the power (and optionally phase) for tseries:
     if to_return == 'both':
-        phaseAll,powerAll = wavelet.tsPhasePow(freqs=freqs,tseries=tseries,width=width,
-                                       resample=resample,keepBuffer=keepBuffer,
-                                       verbose=verbose,to_return=to_return,
-                                       freqDimName=freqDimName)
+        phaseAll, powerAll = wavelet.tsPhasePow(freqs=freqs, tseries=tseries, width=width,
+                                                resample=resample, keepBuffer=keepBuffer,
+                                                verbose=verbose, to_return=to_return,
+                                                freqDimName=freqDimName)
     else:
-        powerAll = wavelet.tsPhasePow(freqs=freqs,tseries=tseries,width=width,
-                              resample=resample,keepBuffer=keepBuffer,
-                              verbose=verbose,to_return=to_return,
-                              freqDimName=freqDimName)
+        powerAll = wavelet.tsPhasePow(freqs=freqs, tseries=tseries, width=width,
+                                      resample=resample, keepBuffer=keepBuffer,
+                                      verbose=verbose, to_return=to_return,
+                                      freqDimName=freqDimName)
 
-    if log: # Ensure power is positive and log10 transform:
-        powerAll.data[powerAll.data<=0] = N.finfo(powerAll.data.dtype).eps
+    if log:  # Ensure power is positive and log10 transform:
+        powerAll.data[powerAll.data <= 0] = N.finfo(powerAll.data.dtype).eps
         powerAll.data = N.log10(powerAll.data)
 
     # Get zmean and zstd (DimData objects with a frequency dimension each):
-    if isinstance(zTrans,tuple): # zmean and zstd are passed as zTrans
-        if ((len(zTrans) != 2) or (not isinstance(zTrans[0],DimData)) or
-            (not isinstance(zTrans[1],DimData)) or (zTrans[0].ndim!=1) or
-            (zTrans[1].ndim!=1) or (zTrans[0].dims.names[0]!=freqDimName) or
-            (zTrans[1].dims.names[0]!=freqDimName) or
-            (zTrans[0][freqDimName]!=powerAll[freqDimName]).any() or 
-            (zTrans[1][freqDimName]!=powerAll[freqDimName]).any()):
+    if isinstance(zTrans, tuple):  # zmean and zstd are passed as zTrans
+        if ((len(zTrans) != 2) or (not isinstance(zTrans[0], DimData)) or
+            (not isinstance(zTrans[1], DimData)) or (zTrans[0].ndim != 1) or
+            (zTrans[1].ndim != 1) or (zTrans[0].dims.names[0] != freqDimName) or
+            (zTrans[1].dims.names[0] != freqDimName) or
+            (zTrans[0][freqDimName] != powerAll[freqDimName]).any() or
+                (zTrans[1][freqDimName] != powerAll[freqDimName]).any()):
             raise ValueError("The ztrans tuple needs to conform to the\
             following format: (zmean,zstd). Where zmean and zstd are both\
             instances of DimData each with a single frequency dimension.\
@@ -69,14 +69,14 @@ def tsZtransPow(freqs,tseries,zTrans=True,log=True,width=5,resample=None,
             %f" % zTrans[1].data.min())
         zmean = zTrans[0]
         zstd = zTrans[1]
-    else: # zmean and zstd must be calculated
-        if isinstance(zTrans,TimeSeries):
+    else:  # zmean and zstd must be calculated
+        if isinstance(zTrans, TimeSeries):
             # Get the power for the provided baseline time series:
-            zpow = wavelet.tsPhasePow(freqs=freqs,tseries=zTrans,width=width,
-                              resample=resample,keepBuffer=False,verbose=verbose,
-                              to_return='pow',freqDimName=freqDimName)
+            zpow = wavelet.tsPhasePow(freqs=freqs, tseries=zTrans, width=width,
+                                      resample=resample, keepBuffer=False, verbose=verbose,
+                                      to_return='pow', freqDimName=freqDimName)
             if log:
-                zpow.data[zpow.data<=0] = N.finfo(zpow.data.dtype).eps
+                zpow.data[zpow.data <= 0] = N.finfo(zpow.data.dtype).eps
                 zpow.data = N.log10(zpow.data)
         else:
             # Copy the power for the entire time series:
@@ -85,11 +85,13 @@ def tsZtransPow(freqs,tseries,zTrans=True,log=True,width=5,resample=None,
         # Now calculate zmean and zstd from zpow:
         # (using stats.std will calculate the unbiased std)
         if log:
-            zmean = zpow.margin(freqDimName,stats.mean,unit="mean log10 power")
-            zstd = zpow.margin(freqDimName,stats.std,unit="std of log10 power")
+            zmean = zpow.margin(freqDimName, stats.mean,
+                                unit="mean log10 power")
+            zstd = zpow.margin(freqDimName, stats.std,
+                               unit="std of log10 power")
         else:
-            zmean = zpow.margin(freqDimName,stats.mean,unit="mean power")
-            zstd = zpow.margin(freqDimName,stats.std,unit="std of power")
+            zmean = zpow.margin(freqDimName, stats.mean, unit="mean power")
+            zstd = zpow.margin(freqDimName, stats.std, unit="std of power")
 
     # For the transformation {zmean,zstd}.data need to have a compatible shape.
     # Calculate the dimensions with which to reshape (all 1 except for the
@@ -100,9 +102,8 @@ def tsZtransPow(freqs,tseries,zTrans=True,log=True,width=5,resample=None,
     # z transform using reshapedims to make the arrays compatible:
     powerAll.data = powerAll.data - zmean.data.reshape(reshapedims)
     powerAll.data = powerAll.data / zstd.data.reshape(reshapedims)
-    
+
     if to_return == 'both':
-        return phaseAll,powerAll,(zmean,zstd)
+        return phaseAll, powerAll, (zmean, zstd)
     else:
-        return powerAll,(zmean,zstd)
-        
+        return powerAll, (zmean, zstd)

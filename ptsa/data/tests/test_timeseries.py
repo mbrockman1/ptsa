@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -11,7 +11,7 @@ import numpy as np
 import re
 from numpy.testing import TestCase
 
-from ptsa.data import Dim,DimArray,TimeSeries
+from ptsa.data import Dim, DimArray, TimeSeries
 from ptsa import filt
 
 # from numpy.testing import NumpyTest, TestCase
@@ -26,7 +26,7 @@ from ptsa import filt
 
 #     def test_bar(self): pass
 #         #print "testing bar"
-      
+
 
 # if __name__ == '__main__':
 #     NumpyTest.main()
@@ -38,44 +38,46 @@ class TestData:
     def __init__(self):
         # create 10 Hz sine waves at 200 and 50 Hz 4000ms long
         numSecs = 4.
-        numPoints = int(numSecs*200.)
+        numPoints = int(numSecs * 200.)
         Hz = 10
-        d200_10 = np.sin(np.arange(numPoints,dtype=np.float)*2*np.pi*
-                         Hz*numSecs/numPoints)
+        d200_10 = np.sin(np.arange(numPoints, dtype=np.float) * 2 * np.pi *
+                         Hz * numSecs / numPoints)
         Hz = 5
-        d200_5 = np.sin(np.arange(numPoints,dtype=np.float)*2*np.pi*
-                        Hz*numSecs/numPoints)
-        self.dat200 = np.array([d200_10,d200_5])
+        d200_5 = np.sin(np.arange(numPoints, dtype=np.float) * 2 * np.pi *
+                        Hz * numSecs / numPoints)
+        self.dat200 = np.array([d200_10, d200_5])
         # calc the time range
         offset = -200
         duration = numPoints
-        samplesize = 1./200.
-        sampStart = offset*samplesize
-        sampEnd = sampStart + (duration-1)*samplesize
-        timeRange = np.linspace(sampStart,sampEnd,duration)
-        self.dims200 = [Dim(np.arange(self.dat200.shape[0]),'channel'),
-                        Dim(timeRange,'time',unit='ms')]
-        
+        samplesize = 1. / 200.
+        sampStart = offset * samplesize
+        sampEnd = sampStart + (duration - 1) * samplesize
+        timeRange = np.linspace(sampStart, sampEnd, duration)
+        self.dims200 = [Dim(np.arange(self.dat200.shape[0]), 'channel'),
+                        Dim(timeRange, 'time', unit='ms')]
+
         numSecs = 4.
-        numPoints = int(numSecs*50.)
+        numPoints = int(numSecs * 50.)
         Hz = 10
-        d50_10 = np.sin(np.arange(numPoints,dtype=np.float)*2*np.pi*
-                        Hz*numSecs/numPoints)
+        d50_10 = np.sin(np.arange(numPoints, dtype=np.float) * 2 * np.pi *
+                        Hz * numSecs / numPoints)
         Hz = 5
-        d50_5 = np.sin(np.arange(numPoints,dtype=np.float)*2*np.pi*
-                       Hz*numSecs/numPoints)
-        self.dat50 = np.array([d50_10,d50_5])
+        d50_5 = np.sin(np.arange(numPoints, dtype=np.float) * 2 * np.pi *
+                       Hz * numSecs / numPoints)
+        self.dat50 = np.array([d50_10, d50_5])
         # calc the time range in MS
         offset = -50
         duration = numPoints
-        samplesize = 1000./50.
-        sampStart = offset*samplesize
-        sampEnd = sampStart + (duration-1)*samplesize
-        timeRange = np.linspace(sampStart,sampEnd,duration)
-        self.dims50 = [Dim(np.arange(self.dat50.shape[0]),'channel'),
-                        Dim(timeRange,'time',unit='ms')]
+        samplesize = 1000. / 50.
+        sampStart = offset * samplesize
+        sampEnd = sampStart + (duration - 1) * samplesize
+        timeRange = np.linspace(sampStart, sampEnd, duration)
+        self.dims50 = [Dim(np.arange(self.dat50.shape[0]), 'channel'),
+                       Dim(timeRange, 'time', unit='ms')]
 
 # test TimeSeries
+
+
 class test_TimeSeries(TestCase):
     def setUp(self):
         td = TestData()
@@ -83,65 +85,63 @@ class test_TimeSeries(TestCase):
         self.dims200 = td.dims200
         self.dat50 = td.dat50
         self.dims50 = td.dims50
+
     def test_init(self):
         # init a TimeSeries with all combos of options and verify that
         # the attributes are correct
 
         # fewest params
-        ts = TimeSeries(self.dat200,'time',200,dims = self.dims200)
+        ts = TimeSeries(self.dat200, 'time', 200, dims=self.dims200)
         np.testing.assert_equal(ts[:], self.dat200[:])
         self.assertEqual(ts.shape, self.dat200.shape)
-        self.assertEqual(ts.taxis, len(self.dat200.shape)-1)
-        self.assertEqual(ts.samplerate,200)
-        self.assertRaises(ValueError,TimeSeries,self.dat200,
-                          'bla',200,dims=self.dims200)
-        self.assertRaises(ValueError,TimeSeries,self.dat200,
-                          'time',-200,dims=self.dims200)
+        self.assertEqual(ts.taxis, len(self.dat200.shape) - 1)
+        self.assertEqual(ts.samplerate, 200)
+        self.assertRaises(ValueError, TimeSeries, self.dat200,
+                          'bla', 200, dims=self.dims200)
+        self.assertRaises(ValueError, TimeSeries, self.dat200,
+                          'time', -200, dims=self.dims200)
 
-        
     def test_remove_buffer(self):
         buf = 200
-        numsamp = 4*200
-        ts = TimeSeries(self.dat200,'time',200, dims=self.dims200)
+        numsamp = 4 * 200
+        ts = TimeSeries(self.dat200, 'time', 200, dims=self.dims200)
         ts_nobuff = ts.remove_buffer(1)
-        self.assertEqual(ts_nobuff.shape[ts_nobuff.taxis],numsamp-2*buf)
-        self.assertEqual(len(ts_nobuff['time']),numsamp-2*buf)
-        ts_nobuff = ts.remove_buffer((1,1))
-        self.assertEqual(ts_nobuff.shape[ts_nobuff.taxis],numsamp-2*buf)
-        self.assertEqual(len(ts_nobuff['time']),numsamp-2*buf)
+        self.assertEqual(ts_nobuff.shape[ts_nobuff.taxis], numsamp - 2 * buf)
+        self.assertEqual(len(ts_nobuff['time']), numsamp - 2 * buf)
+        ts_nobuff = ts.remove_buffer((1, 1))
+        self.assertEqual(ts_nobuff.shape[ts_nobuff.taxis], numsamp - 2 * buf)
+        self.assertEqual(len(ts_nobuff['time']), numsamp - 2 * buf)
         # make sure that negative durations throw exception
-        self.assertRaises(ValueError,ts.remove_buffer,-1)
+        self.assertRaises(ValueError, ts.remove_buffer, -1)
 
     def tst_setattr(self):
-        ts = TimeSeries(self.dat200,'time',200,dims=self.dims200)
-        self.assertRaises(ValueError,ts.__setattr__,'tdim','bla')
-        self.assertRaises(ValueError,ts.__setattr__,'samplerate',-1)
+        ts = TimeSeries(self.dat200, 'time', 200, dims=self.dims200)
+        self.assertRaises(ValueError, ts.__setattr__, 'tdim', 'bla')
+        self.assertRaises(ValueError, ts.__setattr__, 'samplerate', -1)
 
     def test_filter(self):
         samplerate = 200
-        filtType='stop'
-        freqRange = [10,20]
+        filtType = 'stop'
+        freqRange = [10, 20]
         order = 4
-        ts = TimeSeries(self.dat200,'time',samplerate,dims=self.dims200)
+        ts = TimeSeries(self.dat200, 'time', samplerate, dims=self.dims200)
         ts_filt = ts.filtered(freqRange, filtType, order)
-        test = filt.buttfilt(self.dat200,freqRange,samplerate,filtType,
-                             order,axis=ts.taxis)
-        np.testing.assert_array_almost_equal(ts_filt[:],test[:],decimal=6)
+        test = filt.buttfilt(self.dat200, freqRange, samplerate, filtType,
+                             order, axis=ts.taxis)
+        np.testing.assert_array_almost_equal(ts_filt[:], test[:], decimal=6)
 
     def test_resample(self):
-        ts200 = TimeSeries(self.dat200,'time',200,dims=self.dims200)
+        ts200 = TimeSeries(self.dat200, 'time', 200, dims=self.dims200)
         ts50 = TimeSeries(
-            self.dat50,'time',50,dims=self.dims50).remove_buffer(1.0)
+            self.dat50, 'time', 50, dims=self.dims50).remove_buffer(1.0)
         ts50_200 = ts200.resampled(50).remove_buffer(1.0)
-        np.testing.assert_equal(ts50_200.shape[:],ts50.shape[:])
-        #print type(ts200['time'])
-        #print type(ts50['time'])
+        np.testing.assert_equal(ts50_200.shape[:], ts50.shape[:])
+        # print type(ts200['time'])
+        # print type(ts50['time'])
         np.testing.assert_array_almost_equal(
-            ts50_200['time']*1000,ts50['time'],decimal=6)
-        np.testing.assert_array_almost_equal(ts50_200[:],ts50[:],decimal=6)
+            ts50_200['time'] * 1000, ts50['time'], decimal=6)
+        np.testing.assert_array_almost_equal(ts50_200[:], ts50[:], decimal=6)
 
     def test_remove_tdim(self):
-        ts200 = TimeSeries(self.dat200,'time',200,dims=self.dims200)
-        self.assertTrue(isinstance(ts200.mean('time'),DimArray))
-
-
+        ts200 = TimeSeries(self.dat200, 'time', 200, dims=self.dims200)
+        self.assertTrue(isinstance(ts200.mean('time'), DimArray))

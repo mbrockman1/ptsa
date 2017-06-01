@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -11,6 +11,7 @@
 import numpy as np
 from scipy.stats import ttest_ind, ttest_1samp, norm
 import sys
+
 
 def gen_perms(dat, group_var, nperms):
     """
@@ -24,11 +25,11 @@ def gen_perms(dat, group_var, nperms):
     ugrp = np.unique(dat[group_var])
 
     # save indices for each unique group
-    grpind = {u:np.nonzero(dat[group_var]==u)[0] for u in ugrp}
+    grpind = {u: np.nonzero(dat[group_var] == u)[0] for u in ugrp}
 
     # set the base permutation indices for each unique group
-    p_ind = {u:np.arange(len(grpind[u])) for u in ugrp}
-    
+    p_ind = {u: np.arange(len(grpind[u])) for u in ugrp}
+
     # start with actual data
     perms = [np.arange(len(dat))]
 
@@ -43,7 +44,7 @@ def gen_perms(dat, group_var, nperms):
             perm = np.random.permutation(p_ind[u])
 
             # insert the permuted group indices into the base index
-            np.put(ind,grpind[u],grpind[u][perm])
+            np.put(ind, grpind[u], grpind[u][perm])
 
         # append the shuffled perm to the list of permutations
         perms.append(ind)
@@ -53,18 +54,17 @@ def gen_perms(dat, group_var, nperms):
     return perms
 
 
-
-def ttest_ind_z_one_sided(X,Y):
+def ttest_ind_z_one_sided(X, Y):
     # do the test
-    t,p = ttest_ind(X,Y)
+    t, p = ttest_ind(X, Y)
 
     # convert the pvals to one-sided tests based on the t
-    p = (p/2.)+np.finfo(p.dtype).eps
-    p[t>0] = 1-p[t>0]
+    p = (p / 2.) + np.finfo(p.dtype).eps
+    p[t > 0] = 1 - p[t > 0]
 
     # convert the p to a z
     z = norm.ppf(p)
-    
+
     return z
 
 
@@ -81,34 +81,36 @@ def permutation_test(X, Y=None, parametric=True, iterations=1000):
         nX = len(X)
     else:
         paired = False
-        data = np.r_[X,Y]
+        data = np.r_[X, Y]
         nX = len(X)
         nY = len(Y)
 
     # currently no non-parametric
     if not parametric:
-        raise NotImplementedError("Currently only parametric stats are supported.")
+        raise NotImplementedError(
+            "Currently only parametric stats are supported.")
 
     # perform stats
     z_boot = []
     if paired:
         # paired stat
-        raise NotImplementedError("Currently only non-paired stats are supported.")
+        raise NotImplementedError(
+            "Currently only non-paired stats are supported.")
         # first on actual data
         #t,p = ttest_1samp(data)
     else:
         # non-paired
         # first on actual data
-        z = ttest_ind_z_one_sided(data[:nX],data[nX:])
+        z = ttest_ind_z_one_sided(data[:nX], data[nX:])
 
         # now on random shuffles
-        sys.stdout.write('%d: '%iterations)
+        sys.stdout.write('%d: ' % iterations)
         for i in range(iterations):
             # shuffle it
-            sys.stdout.write('%d '%i)
+            sys.stdout.write('%d ' % i)
             sys.stdout.flush()
             np.random.shuffle(data)
-            z_boot.append(ttest_ind_z_one_sided(data[:nX],data[nX:]))
+            z_boot.append(ttest_ind_z_one_sided(data[:nX], data[nX:]))
         sys.stdout.write('\n')
         sys.stdout.flush()
 

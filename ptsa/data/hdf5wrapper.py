@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -15,10 +15,12 @@ import h5py
 from .basewrapper import BaseWrapper
 from .timeseries import TimeSeries
 
+
 class HDF5Wrapper(BaseWrapper):
     """
     Interface to data stored in an HDF5 file.
     """
+
     def __init__(self, filepath, dataset_name='data',
                  annotations_name='annotations',
                  channel_info_name='channel_info',
@@ -61,7 +63,7 @@ class HDF5Wrapper(BaseWrapper):
         if not data is None:
             # must provide samplerate and data
             # connect to the file and get the dataset
-            f = h5py.File(self.filepath,'a')
+            f = h5py.File(self.filepath, 'a')
 
             # use the data to create a dataset
             self.data_dtype = data.dtype
@@ -104,7 +106,7 @@ class HDF5Wrapper(BaseWrapper):
             f.close()
         else:
             # connect to the file and get info
-            f = h5py.File(self.filepath,'r')
+            f = h5py.File(self.filepath, 'r')
             d = f[self.dataset_name]
             self.data_dtype = np.dtype(d.attrs['data_dtype'])
             self.file_dtype = d.dtype
@@ -129,35 +131,35 @@ class HDF5Wrapper(BaseWrapper):
             self.gain = 1.0
             # calc it if we are going from float to int
             if (self.file_dtype.kind == 'i') and (self.data_dtype.kind == 'f'):
-                fr = np.iinfo(self.file_dtype).max*2
-                dr = np.abs(data).max()*2 * (1.+self.gain_buffer)
-                self.gain = dr/fr
+                fr = np.iinfo(self.file_dtype).max * 2
+                dr = np.abs(data).max() * 2 * (1. + self.gain_buffer)
+                self.gain = dr / fr
 
         # calc and apply gain if necessary
         if self.apply_gain and self.gain != 1.0:
-            return np.asarray(data/self.gain,dtype=self.file_dtype)
+            return np.asarray(data / self.gain, dtype=self.file_dtype)
         else:
-            return np.asarray(data,dtype=self.file_dtype)
+            return np.asarray(data, dtype=self.file_dtype)
 
     def _data_from_file(self, data):
         # see if apply gain we've already calculated
         if self.apply_gain and self.gain != 1.0:
-            return np.asarray(data*self.gain, dtype=self.data_dtype)
+            return np.asarray(data * self.gain, dtype=self.data_dtype)
         else:
             return np.asarray(data, dtype=self.data_dtype)
 
     def _get_samplerate(self, channel=None):
         # Same samplerate for all channels.
         # get the samplerate property of the dataset
-        f = h5py.File(self.filepath,'r')
+        f = h5py.File(self.filepath, 'r')
         data = f[self.dataset_name]
         samplerate = data.attrs['samplerate']
         f.close()
         return samplerate
 
-    def _get_nsamples(self,channel=None):
+    def _get_nsamples(self, channel=None):
         # get the dimensions of the data
-        f = h5py.File(self.filepath,'r')
+        f = h5py.File(self.filepath, 'r')
         data = f[self.dataset_name]
         nsamples = data.shape[1]
         f.close()
@@ -165,7 +167,7 @@ class HDF5Wrapper(BaseWrapper):
 
     def _get_nchannels(self):
         # get the dimensions of the data
-        f = h5py.File(self.filepath,'r')
+        f = h5py.File(self.filepath, 'r')
         data = f[self.dataset_name]
         nchannels = data.shape[0]
         f.close()
@@ -173,7 +175,7 @@ class HDF5Wrapper(BaseWrapper):
 
     def _get_annotations(self):
         # get the dimensions of the data
-        f = h5py.File(self.filepath,'r')
+        f = h5py.File(self.filepath, 'r')
         if self.annotations_name in f:
             annot = f[self.annotations_name][:]
         else:
@@ -183,7 +185,7 @@ class HDF5Wrapper(BaseWrapper):
 
     def _set_annotations(self, annotations):
         # get the dimensions of the data
-        f = h5py.File(self.filepath,'a')
+        f = h5py.File(self.filepath, 'a')
         if self.annotations_name in f:
             del f[self.annotations_name]
 
@@ -193,7 +195,7 @@ class HDF5Wrapper(BaseWrapper):
 
     def _get_channel_info(self):
         # get the dimensions of the data
-        f = h5py.File(self.filepath,'r')
+        f = h5py.File(self.filepath, 'r')
         if self.channel_info_name in f:
             chan_info = f[self.channel_info_name][:]
         else:
@@ -203,7 +205,7 @@ class HDF5Wrapper(BaseWrapper):
 
     def _set_channel_info(self, channel_info):
         # get the dimensions of the data
-        f = h5py.File(self.filepath,'a')
+        f = h5py.File(self.filepath, 'a')
         if self.channel_info_name in f:
             del f[self.channel_info_name]
 
@@ -211,28 +213,29 @@ class HDF5Wrapper(BaseWrapper):
                              data=channel_info, **self.hdf5opts)
         f.close()
 
-    def _load_data(self,channels,event_offsets,dur_samp,offset_samp):
+    def _load_data(self, channels, event_offsets, dur_samp, offset_samp):
         """
         """
         # connect to the file and get the dataset
-        f = h5py.File(self.filepath,'r')
+        f = h5py.File(self.filepath, 'r')
         data = f[self.dataset_name]
 
         # allocate for data
-        eventdata = np.empty((len(channels),len(event_offsets),dur_samp),
-                                 dtype=self.data_dtype)*np.nan
+        eventdata = np.empty((len(channels), len(event_offsets), dur_samp),
+                             dtype=self.data_dtype) * np.nan
 
     # loop over events
-        for e,evOffset in enumerate(event_offsets):
+        for e, evOffset in enumerate(event_offsets):
                 # set the range
-                ssamp = offset_samp+evOffset
-                esamp = ssamp + dur_samp
+            ssamp = offset_samp + evOffset
+            esamp = ssamp + dur_samp
 
-                # check the ranges
-                if ssamp < 0 or esamp > data.shape[1]:
-                    raise IOError('Event with offset '+str(evOffset)+
-                                  ' is outside the bounds of the data.')
-                eventdata[:,e,:] = self._data_from_file(data[channels,ssamp:esamp])
+            # check the ranges
+            if ssamp < 0 or esamp > data.shape[1]:
+                raise IOError('Event with offset ' + str(evOffset) +
+                              ' is outside the bounds of the data.')
+            eventdata[:, e, :] = self._data_from_file(
+                data[channels, ssamp:esamp])
 
         # close the file
         f.close()
@@ -244,7 +247,7 @@ class HDF5Wrapper(BaseWrapper):
         Must be all channels.
         """
         # connect to the file and get the dataset
-        f = h5py.File(self.filepath,'a')
+        f = h5py.File(self.filepath, 'a')
 
         # get the dataset (must already exist)
         d = f[self.dataset_name]
@@ -257,10 +260,10 @@ class HDF5Wrapper(BaseWrapper):
         # reshape to hold new data
         cursamp = d.shape[1]
         newsamp = data.shape[1]
-        d.shape = (d.shape[0], cursamp+newsamp)
+        d.shape = (d.shape[0], cursamp + newsamp)
 
         # append the data
-        d[:,cursamp:cursamp+newsamp] = self._data_to_file(data)
+        d[:, cursamp:cursamp + newsamp] = self._data_to_file(data)
 
         # close the file
         f.close()
@@ -271,7 +274,7 @@ class HDF5Wrapper(BaseWrapper):
         of the entire dataset to match, throwing out data if smaller.
         """
         # connect to the file and get the dataset
-        f = h5py.File(self.filepath,'a')
+        f = h5py.File(self.filepath, 'a')
 
         # get the dataset (must already exist)
         d = f[self.dataset_name]
@@ -283,7 +286,7 @@ class HDF5Wrapper(BaseWrapper):
             d.shape = (d.shape[0], newsamp)
 
         # set the data
-        d[channel,:] = self._data_to_file(data)
+        d[channel, :] = self._data_to_file(data)
 
         # close the file
         f.close()

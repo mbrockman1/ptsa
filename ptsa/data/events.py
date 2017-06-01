@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -9,9 +9,10 @@
 
 # global imports
 import numpy as np
-from .timeseries import TimeSeries,Dim
+from .timeseries import TimeSeries, Dim
 
 #import pdb
+
 
 class Events(np.recarray):
     """
@@ -30,7 +31,7 @@ class Events(np.recarray):
     def __new__(subtype, data):
         return data.view(subtype)
 
-    def remove_fields(self,*fields_to_remove):
+    def remove_fields(self, *fields_to_remove):
         """
         Return a new instance of the recarray with specified fields
         removed.
@@ -50,7 +51,7 @@ class Events(np.recarray):
         # loop over fields, keeping if not matching fieldName
         for field in self.dtype.names:
             # don't add the field if in fields_to_remove list
-            #if sum(map(lambda x: x==field,fields_to_remove)) == 0:
+            # if sum(map(lambda x: x==field,fields_to_remove)) == 0:
             if not field in fields_to_remove:
                 # append the data
                 arrays.append(self[field])
@@ -59,9 +60,9 @@ class Events(np.recarray):
         # return the new Events
         if len(arrays) == 0:
             arrays.append([])
-        return np.rec.fromarrays(arrays,names=','.join(names)).view(self.__class__)
+        return np.rec.fromarrays(arrays, names=','.join(names)).view(self.__class__)
 
-    def add_fields(self,**fields):
+    def add_fields(self, **fields):
         """
         Add fields from the keyword args provided and return a new
         instance.
@@ -92,35 +93,35 @@ class Events(np.recarray):
         names = ','.join(self.dtype.names)
 
         # loop over the kwargs of field
-        for name,data in fields.items():
+        for name, data in fields.items():
             # see if already there, error if so
             if name in self.dtype.fields:
                 # already exists
-                raise ValueError('Field "'+name+'" already exists.')
+                raise ValueError('Field "' + name + '" already exists.')
 
             # append the array and name
-            if(isinstance(data,np.dtype)|
-               isinstance(data,type)|isinstance(data,str)):
+            if(isinstance(data, np.dtype) |
+               isinstance(data, type) | isinstance(data, str)):
                 # add empty array the length of the data
-                arrays.append(np.empty(len(self),data))
+                arrays.append(np.empty(len(self), data))
             else:
                 # add the data as an array
                 arrays.append(data)
 
             # add the name
-            if len(names)>0:
+            if len(names) > 0:
                 # append ,
-                names = names+','
+                names = names + ','
             # append the name
-            names = names+name
+            names = names + name
         # return the new Events
-        return np.rec.fromarrays(arrays,names=names).view(self.__class__)
+        return np.rec.fromarrays(arrays, names=names).view(self.__class__)
 
-    def get_data(self,channels,start_time,end_time,buffer_time=0.0,
+    def get_data(self, channels, start_time, end_time, buffer_time=0.0,
                  resampled_rate=None,
-                 filt_freq=None,filt_type='stop',filt_order=4,
-                 keep_buffer=False,esrc='esrc',eoffset='eoffset',
-                 loop_axis=None,num_mp_procs=0,
+                 filt_freq=None, filt_type='stop', filt_order=4,
+                 keep_buffer=False, esrc='esrc', eoffset='eoffset',
+                 loop_axis=None, num_mp_procs=0,
                  eoffset_in_time=True):
         """
         Return the requested range of data for each event by using the
@@ -167,7 +168,7 @@ class Events(np.recarray):
         # check for necessary fields
         if not (esrc in self.dtype.names and
                 eoffset in self.dtype.names):
-            raise ValueError(esrc+' and '+eoffset+' must be valid fieldnames '+
+            raise ValueError(esrc + ' and ' + eoffset + ' must be valid fieldnames ' +
                              'specifying source and offset for the data.')
 
         # get ready to load dat
@@ -181,16 +182,16 @@ class Events(np.recarray):
         eventdata = None
         for src in usources:
             # get the eventOffsets from that source
-            ind = np.atleast_1d(self[esrc]==src)
+            ind = np.atleast_1d(self[esrc] == src)
 
             if len(ind) == 1:
-                event_offsets=self[eoffset]
+                event_offsets = self[eoffset]
                 events.append(self)
             else:
                 event_offsets = self[ind][eoffset]
                 events.append(self[ind])
 
-            #print "Loading %d events from %s" % (ind.sum(),src)
+            # print "Loading %d events from %s" % (ind.sum(),src)
             # get the timeseries for those events
             newdat = src.get_event_data(channels,
                                         event_offsets,
@@ -209,7 +210,7 @@ class Events(np.recarray):
             if eventdata is None:
                 eventdata = newdat
             else:
-                eventdata = eventdata.extend(newdat,axis=1)
+                eventdata = eventdata.extend(newdat, axis=1)
 
         # concatenate (must eventually check that dims match)
         tdim = eventdata['time']
@@ -218,6 +219,6 @@ class Events(np.recarray):
         events = np.concatenate(events).view(self.__class__)
         eventdata = TimeSeries(eventdata,
                                'time', srate,
-                               dims=[cdim,Dim(events,'events'),tdim])
+                               dims=[cdim, Dim(events, 'events'), tdim])
 
         return eventdata

@@ -72,7 +72,7 @@ def copy_replace(replace_pairs,
                  out_path,
                  cp_globs=('*',),
                  rep_globs=('*',),
-                 renames = ()):
+                 renames=()):
     out_fnames = cp_files(repo_path, cp_globs, out_path)
     renames = [(re.compile(in_exp), out_exp) for in_exp, out_exp in renames]
     fnames = []
@@ -176,7 +176,7 @@ def main():
                       metavar="MAIN_GH_USER")
     parser.add_option("--gitwash-url", dest="gitwash_url",
                       help="URL to gitwash repository - default %s"
-                      % GITWASH_CENTRAL, 
+                      % GITWASH_CENTRAL,
                       default=GITWASH_CENTRAL,
                       metavar="GITWASH_URL")
     parser.add_option("--gitwash-branch", dest="gitwash_branch",

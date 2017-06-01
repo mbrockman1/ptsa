@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -13,12 +13,13 @@ Version management module.
 
 from distutils.version import StrictVersion
 
-## !!!!!
+# !!!!!
 from . import versionString
 #vstr = open('versionString.txt').readline().strip()
-## !!!!!
+# !!!!!
 
 ptsaVersion = StrictVersion(versionString.vstr)
+
 
 def versionAtLeast(someString):
     """
@@ -29,6 +30,7 @@ def versionAtLeast(someString):
         return True
     else:
         return False
+
 
 def versionWithin(str1, str2):
     """

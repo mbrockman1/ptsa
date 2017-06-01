@@ -1,11 +1,11 @@
 import numpy as np
 
+
 def _ecdf(x):
     '''no frills empirical cdf used in fdrcorrection
     '''
     nobs = len(x)
     return np.arange(1, nobs + 1) / float(nobs)
-
 
 
 def fdr_correction(pvals, alpha=0.05, method='indep'):
@@ -69,4 +69,3 @@ def fdr_correction(pvals, alpha=0.05, method='indep'):
     pvals_corrected = pvals_corrected[sortrevind].reshape(shape_init)
     reject = reject[sortrevind].reshape(shape_init)
     return reject, pvals_corrected
-

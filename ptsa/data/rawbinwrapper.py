@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -17,12 +17,14 @@ import struct
 import os
 from glob import glob
 
+
 class RawBinWrapper(BaseWrapper):
     """
     Interface to data stored in binary format with a separate file for
     each channel.  
     """
-    def __init__(self,dataroot,samplerate=None,format='int16',gain=1):
+
+    def __init__(self, dataroot, samplerate=None, format='int16', gain=1):
         """Initialize the interface to the data.  You must specify the
         dataroot, which is a string that contains the path to and
         root, up to the channel numbers, where the data are stored."""
@@ -35,7 +37,7 @@ class RawBinWrapper(BaseWrapper):
         # see if can find them from a params file in dataroot
         self._params = self._get_params(dataroot)
 
-        # set what we can get from the params 
+        # set what we can get from the params
         if 'samplerate' in self._params:
             self._samplerate = self._params['samplerate']
         if 'format' in self._params:
@@ -56,7 +58,7 @@ class RawBinWrapper(BaseWrapper):
             self._nbytes = 8
             self._fmt_str = 'd'
 
-        self._chanfiles = glob(self._dataroot+'.*[0-9]')
+        self._chanfiles = glob(self._dataroot + '.*[0-9]')
         # sorting because the order of the output from glob is
         # arbitrary (not strictly necessary, but nice to have
         # consistency):
@@ -72,20 +74,20 @@ class RawBinWrapper(BaseWrapper):
             names.append(self._chanfiles[i].split('.')[-1])
         self._channel_info = np.rec.fromarrays(
             [numbers, names], names='number,name')
-                    
+
     def _get_dataroot(self, channel=None):
         # Same dataroot for all channels:
-        return self._dataroot            
+        return self._dataroot
 
     def _get_samplerate(self, channel=None):
         # Same samplerate for all channels:
         return self._samplerate
 
-    def _get_nsamples(self,channel=None):
+    def _get_nsamples(self, channel=None):
         # get the dimensions of the data
         # must open a valid channel and seek to the end
         if channel is not None:
-            raise NotImplementedError('Channel cannot be specified!') 
+            raise NotImplementedError('Channel cannot be specified!')
         if self._nsamples is None:
             chanfile = open(self._chanfiles[0], 'rb')
             chanfile.seek(0, 2)
@@ -93,7 +95,7 @@ class RawBinWrapper(BaseWrapper):
                 raise ValueError(
                     'File length does not correspond to data format!')
             else:
-                self._nsamples = chanfile.tell()/self._nbytes
+                self._nsamples = chanfile.tell() / self._nbytes
         return self._nsamples
 
     def _get_nchannels(self):
@@ -103,13 +105,13 @@ class RawBinWrapper(BaseWrapper):
 
     def _get_channel_info(self):
         return self._channel_info
-    
+
     def _get_annotations(self):
         # no annotations for raw data
         annot = None
         return annot
 
-    def _get_params(self,dataroot):
+    def _get_params(self, dataroot):
         """Get parameters of the data from the dataroot."""
         params = {}
 
@@ -120,12 +122,12 @@ class RawBinWrapper(BaseWrapper):
             param_file = os.path.join(os.path.dirname(dataroot), 'params.txt')
             if not os.path.isfile(param_file):
                 raise IOError(
-                    'No params file found in '+str(dataroot)+
+                    'No params file found in ' + str(dataroot) +
                     '. Params files must be in the same directory ' +
                     'as the EEG data and must be named \".params\" ' +
-                    'or \"params.txt\".')        
+                    'or \"params.txt\".')
         # we have a file, so open and process it
-        for line in open(param_file,'r').readlines():
+        for line in open(param_file, 'r').readlines():
             # get the columns by splitting
             cols = line.strip().split()
             # set the params
@@ -136,34 +138,34 @@ class RawBinWrapper(BaseWrapper):
                 'The following fields were supplied:\n' + str(list(params.keys())))
         # return the params dict
         return params
-        
 
-    def _load_data(self,channels,event_offsets,dur_samp,offset_samp):
+    def _load_data(self, channels, event_offsets, dur_samp, offset_samp):
         """
         """
 
         # allocate for data
-        eventdata = np.empty((len(channels),len(event_offsets),dur_samp),
-                             dtype=np.float)*np.nan
+        eventdata = np.empty((len(channels), len(event_offsets), dur_samp),
+                             dtype=np.float) * np.nan
 
         # loop over channels
         for c, channel in enumerate(channels):
             # determine the file
-            eegfname = self._dataroot+'.'+self._channel_info['name'][channel]
+            eegfname = self._dataroot + '.' + \
+                self._channel_info['name'][channel]
             # eegfname = '{}.{:0>3}'.format(self._dataroot,channel)
             if os.path.isfile(eegfname):
-                efile = open(eegfname,'rb')
+                efile = open(eegfname, 'rb')
             else:
                 raise IOError(
-                    'EEG file not found: '+eegfname)
-                    # 'EEG file not found for channel {:0>3} '.format(channel) +
-                    # 'and file root {}\n'.format(self._dataroot))
+                    'EEG file not found: ' + eegfname)
+                # 'EEG file not found for channel {:0>3} '.format(channel) +
+                # 'and file root {}\n'.format(self._dataroot))
 
             # loop over events
             for e, ev_offset in enumerate(event_offsets):
                 # seek to the position in the file
                 thetime = offset_samp + ev_offset
-                efile.seek(self._nbytes * thetime,0)
+                efile.seek(self._nbytes * thetime, 0)
 
                 # read the data
                 data = efile.read(int(self._nbytes * dur_samp))
@@ -184,8 +186,8 @@ class RawBinWrapper(BaseWrapper):
                 eventdata[c, e, :] = data
 
         # multiply by the gain
-	eventdata *= self._gain
-	
+        eventdata *= self._gain
+
         return eventdata
 
     dataroot = property(lambda self: self._get_dataroot())
@@ -201,11 +203,11 @@ class RawBinWrapper(BaseWrapper):
 #         raise "\nError processing the Matlab file: %s\n" + \
 #               "This file must contain an events structure" + \
 #               "with the name \"events\" (case sensitive)!\n" +\
-#               "(All other content of the file is ignored.)" % matfile 
+#               "(All other content of the file is ignored.)" % matfile
 
 #     # get the events
 #     events = mat['events'][0]
-    
+
 #     # get num events
 #     numEvents = len(events)
 
@@ -221,7 +223,7 @@ class RawBinWrapper(BaseWrapper):
 #             else:
 #                 data.append(dtype(dat[0]))
 #         return data
-    
+
 #     # create list with array for each field
 #     data = []
 #     for f,field in enumerate(fields):
@@ -232,7 +234,7 @@ class RawBinWrapper(BaseWrapper):
 # 	    #eegfiles = np.unique([str(x.eegfile[0]) for x in events])
 #             eegfiles = np.unique(loadfield(events,field))
 #             eegfiles = eegfiles[eegfiles!=None]
-	    
+
 # 	    # make dictionary of data wrapers for the unique eeg files
 # 	    efile_dict = {}
 # 	    for eegfile in eegfiles:
@@ -240,15 +242,15 @@ class RawBinWrapper(BaseWrapper):
 
 # 	    # Handle when the eegfile field is blank
 # 	    efile_dict[''] = None
-	
+
 # 	    # set the eegfile to the correct data wrapper
-            
+
 # 	    # newdat = np.array(
 #             #     map(lambda x: efile_dict[str(x.__getattribute__(field))],
 #             #         events))
 #             newdat = np.array([efile_dict[str(x.__getattribute__(field)[0])]
 #                                for x in events])
-			
+
 # 	    # change field name to esrc
 # 	    fields[f] = 'esrc'
 # 	elif field == 'eegoffset':
@@ -270,6 +272,3 @@ class RawBinWrapper(BaseWrapper):
 #     newrec = np.rec.fromarrays(data,names=fields).view(Events)
 
 #     return newrec
-
-
-

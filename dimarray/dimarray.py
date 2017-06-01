@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -16,6 +16,7 @@ from .attrarray import AttrArray
 ###############################
 # New dimensioned array class
 ###############################
+
 
 class Dim(AttrArray):
     """
@@ -53,20 +54,20 @@ class Dim(AttrArray):
     >>> print test
     [1 2 3]
     """
-    _required_attrs = {'name':str}
+    _required_attrs = {'name': str}
 
     def __new__(cls, data, name=None, dtype=None, copy=False, **kwargs):
         if name is None:
             # if 'name' is not specified see if data already has a
             # name attribute:
-            name = getattr(data,'name',None)
+            name = getattr(data, 'name', None)
         if name is None:
             raise AttributeError("A 'name' attribute must be specified!")
         # set the kwargs to have name
         kwargs['name'] = name
 
         # make new AttrArray:
-        dim = AttrArray(data,dtype=dtype,copy=copy,**kwargs)
+        dim = AttrArray(data, dtype=dtype, copy=copy, **kwargs)
 
         # check the dim
         if dim.ndim > 1:
@@ -79,17 +80,18 @@ class Dim(AttrArray):
             elif ndim == 0:
                 dim.shape = (1,)
             else:
-                raise ValueError("Dim instances must be 1-dimensional!\ndim:\n"+
-                                 str(dim)+"\nnewshape:",newshape)
+                raise ValueError("Dim instances must be 1-dimensional!\ndim:\n" +
+                                 str(dim) + "\nnewshape:", newshape)
         # if the array is 0-D, make it 1-D:
         elif dim.ndim == 0:
             dim.shape = (1,)
 
-        #if dim.shape[0] != np.unique(np.asarray(dim)).shape[0]:
+        # if dim.shape[0] != np.unique(np.asarray(dim)).shape[0]:
         #    raise ValueError("Data for Dim objects must be unique!")
 
         # convert to Dim and return:
         return dim.view(cls)
+
 
 class DimIndex(tuple):
     """
@@ -104,33 +106,34 @@ class DimIndex(tuple):
         # compare each bool
         # check other is DimIndex
         ind = []
-        for l,r in zip(self._bool_ind,other._bool_ind):
-            ind.append(l&r)
-        return DimIndex(np.ix_(*ind),ind)
+        for l, r in zip(self._bool_ind, other._bool_ind):
+            ind.append(l & r)
+        return DimIndex(np.ix_(*ind), ind)
 
     def __or__(self, other):
         # compare each bool
         # check other is DimIndex
         ind = []
-        for l,r in zip(self._bool_ind,other._bool_ind):
-            ind.append(l|r)
-        return DimIndex(np.ix_(*ind),ind)
+        for l, r in zip(self._bool_ind, other._bool_ind):
+            ind.append(l | r)
+        return DimIndex(np.ix_(*ind), ind)
 
     def __xor__(self, other):
         # compare each bool
         # check other is DimIndex
         ind = []
-        for l,r in zip(self._bool_ind,other._bool_ind):
-            ind.append(l^r)
-        return DimIndex(np.ix_(*ind),ind)
+        for l, r in zip(self._bool_ind, other._bool_ind):
+            ind.append(l ^ r)
+        return DimIndex(np.ix_(*ind), ind)
+
 
 class DimSelect(Dim):
     """
     Dim that supports boolean comparisons for fancy indexing.
     """
-    _required_attrs = {'name':str,
-                       '_parent_dim_shapes':list,
-                       '_parent_dim_index':int}
+    _required_attrs = {'name': str,
+                       '_parent_dim_shapes': list,
+                       '_parent_dim_index': int}
 
     def __new__(cls, dim, parent_dim_shapes, parent_dim_index):
 
@@ -150,73 +153,81 @@ class DimSelect(Dim):
 
     def __lt__(self, other):
         # get starting indicies
-        ind = [np.ones(shape, dtype=np.bool) for shape in self._parent_dim_shapes]
+        ind = [np.ones(shape, dtype=np.bool)
+               for shape in self._parent_dim_shapes]
 
         # do the comparison along the desired dimension
         ind[self._parent_dim_index] = np.asarray(self) < other
 
         # create the final master index from the list of filtered indices
-        return DimIndex(np.ix_(*ind),ind)
+        return DimIndex(np.ix_(*ind), ind)
 
     def __le__(self, other):
         # get starting indicies
-        ind = [np.ones(shape, dtype=np.bool) for shape in self._parent_dim_shapes]
+        ind = [np.ones(shape, dtype=np.bool)
+               for shape in self._parent_dim_shapes]
 
         # do the comparison along the desired dimension
         ind[self._parent_dim_index] = np.asarray(self) <= other
 
         # create the final master index from the list of filtered indices
-        return DimIndex(np.ix_(*ind),ind)
+        return DimIndex(np.ix_(*ind), ind)
 
     def __gt__(self, other):
         # get starting indicies
-        ind = [np.ones(shape, dtype=np.bool) for shape in self._parent_dim_shapes]
+        ind = [np.ones(shape, dtype=np.bool)
+               for shape in self._parent_dim_shapes]
 
         # do the comparison along the desired dimension
         ind[self._parent_dim_index] = np.asarray(self) > other
 
         # create the final master index from the list of filtered indices
-        return DimIndex(np.ix_(*ind),ind)
+        return DimIndex(np.ix_(*ind), ind)
 
     def __ge__(self, other):
         # get starting indicies
-        ind = [np.ones(shape, dtype=np.bool) for shape in self._parent_dim_shapes]
+        ind = [np.ones(shape, dtype=np.bool)
+               for shape in self._parent_dim_shapes]
 
         # do the comparison along the desired dimension
         ind[self._parent_dim_index] = np.asarray(self) >= other
 
         # create the final master index from the list of filtered indices
-        return DimIndex(np.ix_(*ind),ind)
+        return DimIndex(np.ix_(*ind), ind)
 
     def __eq__(self, other):
         # get starting indicies
-        ind = [np.ones(shape, dtype=np.bool) for shape in self._parent_dim_shapes]
+        ind = [np.ones(shape, dtype=np.bool)
+               for shape in self._parent_dim_shapes]
 
         # do the comparison along the desired dimension
         ind[self._parent_dim_index] = np.asarray(self) == other
 
         # create the final master index from the list of filtered indices
-        return DimIndex(np.ix_(*ind),ind)
+        return DimIndex(np.ix_(*ind), ind)
 
     def __ne__(self, other):
         # get starting indicies
-        ind = [np.ones(shape, dtype=np.bool) for shape in self._parent_dim_shapes]
+        ind = [np.ones(shape, dtype=np.bool)
+               for shape in self._parent_dim_shapes]
 
         # do the comparison along the desired dimension
         ind[self._parent_dim_index] = np.asarray(self) != other
 
         # create the final master index from the list of filtered indices
-        return DimIndex(np.ix_(*ind),ind)
+        return DimIndex(np.ix_(*ind), ind)
 
     def is_in(self, vals):
         """
         Elementwise boolean check for membership in a list.
         """
         # get starting indicies
-        ind = [np.ones(shape, dtype=np.bool) for shape in self._parent_dim_shapes]
+        ind = [np.ones(shape, dtype=np.bool)
+               for shape in self._parent_dim_shapes]
 
         # do the comparison along the desired dimension
-        ind[self._parent_dim_index] = np.lib.arraysetops.in1d(np.asarray(self),vals)
+        ind[self._parent_dim_index] = np.lib.arraysetops.in1d(
+            np.asarray(self), vals)
         # i = self._parent_dim_index
         # self_array = np.asarray(self)
         # ind[i] = False
@@ -224,7 +235,7 @@ class DimSelect(Dim):
         #     ind[i] = ind[i] | (self_array == val)
 
         # create the final master index from the list of filtered indices
-        return DimIndex(np.ix_(*ind),ind)
+        return DimIndex(np.ix_(*ind), ind)
 
     def index(self, index):
         """
@@ -246,7 +257,7 @@ class DimSelect(Dim):
             ind[self._parent_dim_index][index] = True
 
         # create the final master index from the list of filtered indices
-        return DimIndex(np.ix_(*ind),ind)
+        return DimIndex(np.ix_(*ind), ind)
 
 
 class DimArray(AttrArray):
@@ -335,10 +346,10 @@ class DimArray(AttrArray):
     >>> data.dims
     array([[0 1 2 3], [0 1 2 3 4]], dtype=object)
     """
-    _required_attrs = {'dims':np.ndarray}
+    _required_attrs = {'dims': np.ndarray}
     dim_names = property(lambda self:
-                  [dim.name for dim in self.dims],
-                  doc="""
+                         [dim.name for dim in self.dims],
+                         doc="""
                   List of dimension names
 
                   This is a property that is created from the dims
@@ -356,15 +367,16 @@ class DimArray(AttrArray):
                   ['First dimension', 'Second dimension']
                   """)
     _dim_namesRE = property(lambda self:
-                     re.compile('(?<!.)\\b'+
-                     '\\b(?!.)|(?<!.)\\b'.join(self.dim_names)
-                     + '\\b(?!.)'))
+                            re.compile('(?<!.)\\b' +
+                                       '\\b(?!.)|(?<!.)\\b'.join(
+                                           self.dim_names)
+                                       + '\\b(?!.)'))
     T = property(lambda self: self.transpose())
     _skip_dim_check = False
     _valid_dimname = re.compile('[a-zA-Z_]\w*')
 
     def __new__(cls, data, dims=None, dtype=None, copy=False, **kwargs):
-        if isinstance(data,str):
+        if isinstance(data, str):
             data_shape = (0,)
         else:
             # got to make sure data is array-type
@@ -375,24 +387,24 @@ class DimArray(AttrArray):
         if dims is None:
             # fill with default values
             dims = []
-            for i,dlen in enumerate(data_shape):
-                dims.append(Dim(np.arange(dlen), 'dim%d'%(i+1)))
+            for i, dlen in enumerate(data_shape):
+                dims.append(Dim(np.arange(dlen), 'dim%d' % (i + 1)))
 
         # Ensure that any array_like container of dims is turned into a
         # numpy.ndarray of Dim dtype:
-        dimarr = np.empty(len(dims),dtype=Dim)
+        dimarr = np.empty(len(dims), dtype=Dim)
         dimarr[:] = dims
 
         # set the kwargs to have dims as an ndarray
         kwargs['dims'] = dimarr
 
         # make new AttrArray parent class
-        dimarray = AttrArray(data,dtype=dtype,copy=copy,**kwargs)
+        dimarray = AttrArray(data, dtype=dtype, copy=copy, **kwargs)
 
         # View as DimArray and return:
         return dimarray.view(cls)
 
-    def __array_finalize__(self,obj):
+    def __array_finalize__(self, obj):
         # Check if obj is None (implies it's unpickling)
         # We must find out if there are other instances of it being None
         if obj is None:
@@ -403,13 +415,13 @@ class DimArray(AttrArray):
             self = self.view(np.ndarray)
             return
         # call the AttrArray finalize
-        AttrArray.__array_finalize__(self,obj)
+        AttrArray.__array_finalize__(self, obj)
         # ensure _skip_dim_check flag is off
         self._skip_dim_check = False
         # if this method is called with _skip_dim_check == True, don't
         # check dims (they need to be adjusted by whatever method
         # called __array_finalize__ with this flag set):
-        if (isinstance(obj,DimArray) and obj._skip_dim_check):
+        if (isinstance(obj, DimArray) and obj._skip_dim_check):
             return
 
         # ensure that the dims attribute is valid:
@@ -421,39 +433,39 @@ class DimArray(AttrArray):
         match the array shape.
         """
         # loop over the dims and make sure they are valid
-        for i,d in enumerate(self.dims):
+        for i, d in enumerate(self.dims):
             # make sure it's a dim
-            if not isinstance(d,Dim):
-                raise AttributeError("The dims attribute must contain "+
-                                     "only Dim instances!\ndim %d: %s\n" % \
-                                     (i,str(type(d))))
+            if not isinstance(d, Dim):
+                raise AttributeError("The dims attribute must contain " +
+                                     "only Dim instances!\ndim %d: %s\n" %
+                                     (i, str(type(d))))
             # make sure it is unique
-            #if d.shape[0] != np.unique(np.asarray(d)).shape[0]:
+            # if d.shape[0] != np.unique(np.asarray(d)).shape[0]:
             #    raise ValueError("Data for Dim objects must be unique!")
 
         # Ensure that the lengths of the Dim instances match the array shape:
         if self.shape != tuple([len(d) for d in self.dims]):
             raise AttributeError("The length of the dims must match the shape" +
-                                 " of the DimArray!\nDimArray shape: "+
-                                 str(self.shape)+"\nShape of the dims:\n"+
+                                 " of the DimArray!\nDimArray shape: " +
+                                 str(self.shape) + "\nShape of the dims:\n" +
                                  str(tuple([len(d) for d in self.dims])))
 
         # Ensure unique dimension names (this will fail if not all Dims)
         if len(np.unique(self.dim_names)) != len(self.dim_names):
-            raise AttributeError("Dimension names must be unique!\nnames: "+
+            raise AttributeError("Dimension names must be unique!\nnames: " +
                                  str(self.dim_names))
 
         # Ensure dimension names are at least 1 charater long
-        if np.any([len(s)<1 for s in self.dim_names]):
-            raise AttributeError("Dimension names must be at least 1 character"+
-                                 " in lenght!\nnames: "+str(self.dim_names))
+        if np.any([len(s) < 1 for s in self.dim_names]):
+            raise AttributeError("Dimension names must be at least 1 character" +
+                                 " in lenght!\nnames: " + str(self.dim_names))
 
         # Ensure unique dimension names are valid identifiers
-        if np.any([len(self._valid_dimname.findall(s)[0])!=len(s)
+        if np.any([len(self._valid_dimname.findall(s)[0]) != len(s)
                    for s in self.dim_names]):
-            raise AttributeError("Dimension names can only contain "+
-                                 "alphanumeric characters and underscores, "+
-                                 "and cannot begin with a number\nnames: "+
+            raise AttributeError("Dimension names can only contain " +
+                                 "alphanumeric characters and underscores, " +
+                                 "and cannot begin with a number\nnames: " +
                                  str(self.dim_names))
 
     def _select_ind(self, *args, **kwargs):
@@ -470,7 +482,7 @@ class DimArray(AttrArray):
         # process the args
         for arg in args:
             # arg must be a string
-            if not isinstance(arg,str):
+            if not isinstance(arg, str):
                 raise TypeError('All args must be strings, ' +
                                 'but you passed: ' + str(type(arg)))
 
@@ -479,15 +491,16 @@ class DimArray(AttrArray):
 
             # figure out which dimension we're dealing with
             found_dim = False
-            for d,k in enumerate(self.dim_names):
+            for d, k in enumerate(self.dim_names):
                 # RE makes sure to not replace substrings
-                if re.search(r'\b'+k+r'\b',filterStr) is not None:
+                if re.search(r'\b' + k + r'\b', filterStr) is not None:
                     # this is our dimension
                     found_dim = True
 
                     # replace the string to access the dimension like:
                     # self['dim1']
-                    filterStr = re.sub(r'\b'+k+r'\b','np.asarray(self["'+k+'"])',filterStr)
+                    filterStr = re.sub(
+                        r'\b' + k + r'\b', 'np.asarray(self["' + k + '"])', filterStr)
 
                     # get the new index
                     newind = eval(filterStr)
@@ -502,7 +515,7 @@ class DimArray(AttrArray):
                     # but a dim could be a list of events that you probe,
                     # which could have multiple values after an equality test,
                     # so we only remove a dimension if there is only one index left
-                    if re.search('==',filterStr) and newind.sum()==1:
+                    if re.search('==', filterStr) and newind.sum() == 1:
                         # we are using equality, so remove dim
                         remove_dim[d] = True
 
@@ -513,11 +526,11 @@ class DimArray(AttrArray):
             # any dimensions
             if not found_dim:
                 # XXX eventually this should be a custom exception
-                raise ValueError("The provided filter string did not specify "+
-                                 "any valid dimensions: "+str(filterStr))
+                raise ValueError("The provided filter string did not specify " +
+                                 "any valid dimensions: " + str(filterStr))
 
         # loop over the kwargs (the other way to filter)
-        for key,value in kwargs.items():
+        for key, value in kwargs.items():
             if key in self.dim_names:
                 # get the proper dimension to cull
                 d = self.dim_names.index(key)
@@ -527,11 +540,11 @@ class DimArray(AttrArray):
         # create the final master index from the list of filtered indices
         m_ind = np.ix_(*ind)
 
-        return m_ind,ind,remove_dim
+        return m_ind, ind, remove_dim
 
     def __setitem__(self, index, obj):
         # process whether we using fancy string-based indices
-        if isinstance(index,str):
+        if isinstance(index, str):
             # see if it's just a single dimension name
             res = self._dim_namesRE.search(index)
             if res:
@@ -542,8 +555,8 @@ class DimArray(AttrArray):
             else:
                 # call find to get the new index from the string
                 index = self.find(index)
-        elif isinstance(index,tuple) and \
-                 np.any([isinstance(ind,str) for ind in index]):
+        elif isinstance(index, tuple) and \
+                np.any([isinstance(ind, str) for ind in index]):
             # Use find to get the new index from the list of stings
             index = self.find(*index)
 
@@ -554,48 +567,48 @@ class DimArray(AttrArray):
         # process whether we using fancy string-based indices
         remove_dim = np.zeros(len(self.dims), dtype=np.bool)
 
-        if isinstance(index,str):
+        if isinstance(index, str):
             # see if it's just a single dimension name
             res = self._dim_namesRE.search(index)
             if res:
                 # we have a single name, so return the
                 # corresponding dimension as a DimSelect
-                #return self.dims[self.dim_names.index(res.group())]
+                # return self.dims[self.dim_names.index(res.group())]
                 ind = self.dim_names.index(res.group())
                 return DimSelect(self.dims[ind],
                                  [d.shape for d in self.dims],
                                  ind)
             else:
                 # call _select_ind to get the new index from the string
-                index,o_ind,remove_dim = self._select_ind(index)
-        elif isinstance(index,tuple) and \
-                 np.any([isinstance(ind,str) for ind in index]):
+                index, o_ind, remove_dim = self._select_ind(index)
+        elif isinstance(index, tuple) and \
+                np.any([isinstance(ind, str) for ind in index]):
             # Use _select_ind to get the new index from the list of stings
-            index,o_ind,remove_dim = self._select_ind(*index)
+            index, o_ind, remove_dim = self._select_ind(*index)
 
         # try block to ensure the _skip_dim_check flag gets reset
         # in the following finally block
         try:
             # skip the dim check b/c we're going to fiddle with them
             self._skip_dim_check = True
-            ret = AttrArray.__getitem__(self,index)
+            ret = AttrArray.__getitem__(self, index)
         finally:
             # reset the _skip_dim_check flag:
             self._skip_dim_check = False
 
         # process the dims if necessary
-        if isinstance(ret,DimArray):
+        if isinstance(ret, DimArray):
             # see which to keep and modify the rest
             tokeep = np.arange(len(self.dims))
             # turn into a tuple for easier processing
-            if not isinstance(index,tuple):
+            if not isinstance(index, tuple):
                 indlist = (index,)
             else:
                 indlist = index
 
             # see if we're gonna ignore removing dimensions
-            if np.any([isinstance(ind,np.ndarray) and \
-                           len(ind)==0 for ind in indlist]):
+            if np.any([isinstance(ind, np.ndarray) and
+                       len(ind) == 0 for ind in indlist]):
                 # don't remove any b/c we selected nothing anyway
                 remove_dim[:] = False
 
@@ -604,52 +617,52 @@ class DimArray(AttrArray):
             for ind in indlist:
                 # increment the current dim
                 i += 1
-                if isinstance(ind,int) or isinstance(ind,int):
+                if isinstance(ind, int) or isinstance(ind, int):
                     # if a changed dimension was reduced to one
                     # level, remove that dimension
-                    tokeep = tokeep[tokeep!=i]
+                    tokeep = tokeep[tokeep != i]
                 elif ind is Ellipsis:
                     # do nothing
                     # PBS: Must add tests for [1,...], [1,...,2], [...,4]
                     # adjust current dim if necesary
-                    if i < self.ndim-1:
+                    if i < self.ndim - 1:
                         # adjust to account for ellipsis
                         i = self.ndim - len(indlist) + i
                     continue
                 elif ind is None:
                     # XXX Does not ensure new dim name does not exist
                     # It's a new axis, so make temp dim
-                    newdim = Dim([0],'newaxis_%d'%(i))
+                    newdim = Dim([0], 'newaxis_%d' % (i))
                     newdims = ret.dims.tolist()
-                    newdims.insert(i+1,newdim)
-                    ret.dims = np.empty(len(newdims),dtype=Dim)
+                    newdims.insert(i + 1, newdim)
+                    ret.dims = np.empty(len(newdims), dtype=Dim)
                     ret.dims[:] = newdims
 
                     # must also update the tokeep list
                     # must shift them up
-                    tokeep[tokeep>=i]+=1
+                    tokeep[tokeep >= i] += 1
                     tokeep = tokeep.tolist()
-                    tokeep.insert(i+1,i)
+                    tokeep.insert(i + 1, i)
                     tokeep = np.array(tokeep)
-                elif not isinstance(ind, slice) and len(ind)==0:
+                elif not isinstance(ind, slice) and len(ind) == 0:
                     # handle where we selected nothing
                     ret.dims[i] = ret.dims[i][[]]
                 else:
                     # slice the dims based on the index
-                    #if isinstance(ind,np.ndarray) and ind.dtype==bool:
+                    # if isinstance(ind,np.ndarray) and ind.dtype==bool:
                     #    if len(ind.shape)>1:
                     #        ret = ret.view(AttrArray)
                     if not isinstance(ind, slice):
                         # squeeze it to maintain dimensionality
                         ind = np.asanyarray(ind)
-                        tosqueeze = [0]*len(ind.shape)
+                        tosqueeze = [0] * len(ind.shape)
                         tosqueeze[i] = slice(None)
                         ind = ind[tuple(tosqueeze)]
                         # if a boolean array is given as an index the
                         # dimensions get lost, so we need to cast to
                         # an AttrArray if there's more than 1 dim:
-                        if isinstance(ind,np.ndarray) and ind.dtype==bool:
-                            if len(self.shape)>1:
+                        if isinstance(ind, np.ndarray) and ind.dtype == bool:
+                            if len(self.shape) > 1:
                                 ret = ret.view(AttrArray)
                     ret.dims[i] = ret.dims[i][ind]
 
@@ -658,25 +671,25 @@ class DimArray(AttrArray):
 
             # remove the specified dims from the main array
             if np.any(remove_dim):
-                ind = np.asarray([slice(None)]*len(ret.shape))
+                ind = np.asarray([slice(None)] * len(ret.shape))
                 ind[remove_dim] = 0
                 ind = tuple(ind)
                 ret = ret[ind]
 
         return ret
 
-    def __getslice__(self,i,j):
+    def __getslice__(self, i, j):
         try:
             # skip the dim check b/c we're going to fiddle with them
             self._skip_dim_check = True
-            ret = AttrArray.__getslice__(self,i,j)
+            ret = AttrArray.__getslice__(self, i, j)
         finally:
             # reset the _skip_dim_check flag:
             self._skip_dim_check = False
-        ret.dims[0] = ret.dims[0].__getslice__(i,j)
+        ret.dims[0] = ret.dims[0].__getslice__(i, j)
         return ret
 
-    def find(self,*args,**kwargs):
+    def find(self, *args, **kwargs):
         """
         Returns a tuple of index arrays for the selected conditions.
 
@@ -721,10 +734,10 @@ class DimArray(AttrArray):
         DimArray([[ True],
                [ True]], dtype=bool)
         """
-        m_ind,ind,remove_dim = self._select_ind(*args,**kwargs)
+        m_ind, ind, remove_dim = self._select_ind(*args, **kwargs)
         return m_ind
 
-    def select(self,*args,**kwargs):
+    def select(self, *args, **kwargs):
         """
         Returns a slice of the data filtered with the select conditions.
 
@@ -775,7 +788,7 @@ class DimArray(AttrArray):
         DimArray([[ True],
                [ True]], dtype=bool)
         """
-        m_ind,ind,remove_dim = self._select_ind(*args,**kwargs)
+        m_ind, ind, remove_dim = self._select_ind(*args, **kwargs)
         return self[m_ind]
 
     def _split_bins(self, dim, bins, function, bin_labels,
@@ -792,10 +805,10 @@ class DimArray(AttrArray):
             split = np.array_split
 
         # Create the new dimension:
-        split_dim = split(self.dims[dim],bins)
+        split_dim = split(self.dims[dim], bins)
         if bin_labels == 'function':
-            new_dim_dat = np.array([function(x,**kwargs) for x in split_dim])
-            new_dim = Dim(new_dim_dat,self.dim_names[dim])
+            new_dim_dat = np.array([function(x, **kwargs) for x in split_dim])
+            new_dim = Dim(new_dim_dat, self.dim_names[dim])
         elif bin_labels == 'sequential':
             new_dim = Dim(np.arange(len(split_dim)),
                           self.dim_names[dim])
@@ -811,16 +824,17 @@ class DimArray(AttrArray):
                              str(bin_labels))
 
         # Create the new data:
-        split_dat = split(self.view(AttrArray),bins,axis=dim)
-        new_dat = np.array([function(x,axis=dim,**kwargs) for x in split_dat])
+        split_dat = split(self.view(AttrArray), bins, axis=dim)
+        new_dat = np.array([function(x, axis=dim, **kwargs)
+                            for x in split_dat])
 
         # Now the dimensions of the array need be re-arranged in the correct
         # order:
         dim_order = np.arange(len(new_dat.shape))
         dim_order[dim] = 0
-        dim_order[0:dim] = np.arange(1,dim+1)
-        dim_order[dim+1:len(new_dat.shape)] = np.arange(dim+1,
-                                                        len(new_dat.shape))
+        dim_order[0:dim] = np.arange(1, dim + 1)
+        dim_order[dim + 1:len(new_dat.shape)] = np.arange(dim + 1,
+                                                          len(new_dat.shape))
         new_dat = new_dat.transpose(dim_order)
 
         # Create and return new DimArray object:
@@ -828,7 +842,7 @@ class DimArray(AttrArray):
         new_dims[dim] = new_dim
         new_attrs = self._attrs.copy()
         new_attrs['dims'] = new_dims
-        return self.__class__(new_dat,**new_attrs)
+        return self.__class__(new_dat, **new_attrs)
 
     def _select_bins(self, dim, bins, function, bin_labels,
                      error_on_nonexact, **kwargs):
@@ -837,12 +851,12 @@ class DimArray(AttrArray):
         a list of intervals. See make_bins method.
         """
         # Create the new dimension:
-        dimbin_indx = np.array([((self.dims[dim]>=x[0]) &
-                                 (self.dims[dim]<x[1])) for x in bins])
+        dimbin_indx = np.array([((self.dims[dim] >= x[0]) &
+                                 (self.dims[dim] < x[1])) for x in bins])
         if np.shape(bins[-1])[-1] == 3:
             new_dim_dat = np.array([x[2] for x in bins])
         elif bin_labels == 'function':
-            new_dim_dat = np.array([function(x,**kwargs) for x in
+            new_dim_dat = np.array([function(x, **kwargs) for x in
                                     [self.dims[dim][indx] for indx in
                                      dimbin_indx]])
         elif bin_labels == 'sequential':
@@ -857,7 +871,7 @@ class DimArray(AttrArray):
                              "bins.\n bins: " + str(bins) + "\n bin_labels: " +
                              str(bin_labels))
 
-        new_dim = Dim(data=new_dim_dat,name=self.dim_names[dim])
+        new_dim = Dim(data=new_dim_dat, name=self.dim_names[dim])
 
         # Create the new data:
         # We need to transpose the data array so that dim is the first
@@ -868,17 +882,17 @@ class DimArray(AttrArray):
 
         # Now we are ready to do the transpose:
         tmpdata = self.copy()
-        tmpdata = np.transpose(tmpdata.view(np.ndarray),totrans)
+        tmpdata = np.transpose(tmpdata.view(np.ndarray), totrans)
 
         # Now loop through each bin applying the function and concatenate the
         # data:
         new_dat = None
-        for b,bin in enumerate(bins):
-            bindata = function(tmpdata[dimbin_indx[b]],axis=0,**kwargs)
+        for b, bin in enumerate(bins):
+            bindata = function(tmpdata[dimbin_indx[b]], axis=0, **kwargs)
             if new_dat is None:
-                new_dat = bindata[np.newaxis,:]
+                new_dat = bindata[np.newaxis, :]
             else:
-                new_dat = np.r_[new_dat,bindata[np.newaxis,:]]
+                new_dat = np.r_[new_dat, bindata[np.newaxis, :]]
 
         # transpose back:
         new_dat = new_dat.transpose(totrans)
@@ -888,11 +902,10 @@ class DimArray(AttrArray):
         new_dims[dim] = new_dim
         new_attrs = self._attrs.copy()
         new_attrs['dims'] = new_dims
-        return self.__class__(new_dat,**new_attrs)
+        return self.__class__(new_dat, **new_attrs)
 
-
-    def make_bins(self,axis,bins,function,bin_labels='function',
-                  error_on_nonexact=True,**kwargs):
+    def make_bins(self, axis, bins, function, bin_labels='function',
+                  error_on_nonexact=True, **kwargs):
         """
         Return a copy of the data with dimension (specified by axis)
         binned as specified.
@@ -966,38 +979,38 @@ class DimArray(AttrArray):
         # Makes sure dim is index (convert dim name if necessary):
         dim = self.get_axis(axis)
         tmp_bins = np.atleast_2d(bins)
-        if len(tmp_bins.shape)>2:
+        if len(tmp_bins.shape) > 2:
             raise ValueError("Invalid bins! Acceptable values are: number of" +
                              " bins, 1-D container of index values, 2-D " +
                              "container of min and max values and (optionally)" +
-                             " a label for each bin. Provided bins: "+str(bins))
+                             " a label for each bin. Provided bins: " + str(bins))
         if np.atleast_2d(bins).shape[1] == 1:
-            return self._split_bins(dim,bins,function,bin_labels,
-                               error_on_nonexact,**kwargs)
+            return self._split_bins(dim, bins, function, bin_labels,
+                                    error_on_nonexact, **kwargs)
         elif np.atleast_2d(bins).shape[1] == 2:
             if not error_on_nonexact:
                 raise ValueError("When bins are explicitly specified, " +
                                  "error_on_nonexact must be True. Provided " +
                                  "value: " + str(error_on_nonexact))
-            return self._select_bins(dim,bins,function,bin_labels,
-                                error_on_nonexact,**kwargs)
+            return self._select_bins(dim, bins, function, bin_labels,
+                                     error_on_nonexact, **kwargs)
         elif np.atleast_2d(bins).shape[1] == 3:
             if bin_labels != 'function':
                 raise ValueError("Simultaneously specification of bin labels " +
                                  "in bins and bin_labels is not allowed. " +
-                                 "Provided bins: " + str(bins)+" Provided " +
+                                 "Provided bins: " + str(bins) + " Provided " +
                                  "bin_labels: " + str(bin_labels))
             if not error_on_nonexact:
                 raise ValueError("When bins are explicitly specified, " +
-                                  "error_on_nonexact must be True. Provided " +
-                                  "value: " + str(error_on_nonexact))
-            return self._select_bins(dim,bins,function,bin_labels,
-                                     error_on_nonexact,**kwargs)
+                                 "error_on_nonexact must be True. Provided " +
+                                 "value: " + str(error_on_nonexact))
+            return self._select_bins(dim, bins, function, bin_labels,
+                                     error_on_nonexact, **kwargs)
         else:
             raise ValueError("Invalid bins! Acceptable values are: number of" +
                              " bins, 1-D container of index values, 2-D " +
                              "container of min and max values and (optionally)" +
-                             " a label for each bin. Provided bins: "+str(bins))
+                             " a label for each bin. Provided bins: " + str(bins))
 
     def extend(self, data, axis=0):
         """
@@ -1024,7 +1037,7 @@ class DimArray(AttrArray):
         the exception of the updated dimension).
         """
         # make sure we have a list
-        if isinstance(data,DimArray):
+        if isinstance(data, DimArray):
             data = [data]
         else:
             data = list(data)
@@ -1033,17 +1046,18 @@ class DimArray(AttrArray):
         axis = self.get_axis(axis)
 
         # make sure all dim_names match:
-        dim_names_deviations = [np.sum(d.dim_names!=self.dim_names) for d in data]
-        if np.sum(dim_names_deviations)>0:
+        dim_names_deviations = [
+            np.sum(d.dim_names != self.dim_names) for d in data]
+        if np.sum(dim_names_deviations) > 0:
             raise ValueError('Names of the dimensions do not match!')
 
         # make sure all dims except for the extended one match:
-        dim_deviations = [np.sum(d.dims!=self.dims) for d in data]
-        if np.sum(dim_deviations)>1:
+        dim_deviations = [np.sum(d.dims != self.dims) for d in data]
+        if np.sum(dim_deviations) > 1:
             raise ValueError('Dimensions do not match!')
 
         # add the current DimArray to the beginning of list:
-        data.insert(0,self)
+        data.insert(0, self)
 
         # list of dims to be concatenated:
         conc_dims = [d.dims[axis] for d in data]
@@ -1054,12 +1068,12 @@ class DimArray(AttrArray):
         data = [d.view(AttrArray) for d in data]
         #dim_names = [d.name for dat in data for d in dat.dims]
 
-        new_dat = np.concatenate(data,axis=axis)
+        new_dat = np.concatenate(data, axis=axis)
         new_dims = copylib.deepcopy(self.dims)
-        new_dims[axis] = Dim(np.concatenate(conc_dims),self.dim_names[axis])
+        new_dims[axis] = Dim(np.concatenate(conc_dims), self.dim_names[axis])
         new_attrs = self._attrs.copy()
         new_attrs['dims'] = new_dims
-        return self.__class__(new_dat,**new_attrs)
+        return self.__class__(new_dat, **new_attrs)
 
         # # create new array:
         # result = np.concatenate(data,axis=axis).view(AttrArray)
@@ -1075,13 +1089,13 @@ class DimArray(AttrArray):
         each value of the new dim.
         """
         # add the axis and repeat the data
-        ret = self[np.newaxis].repeat(len(dim),axis=0)
+        ret = self[np.newaxis].repeat(len(dim), axis=0)
         # now replace the dim
         ret.dims[0] = dim
         # return as desired class
         return ret.view(self.__class__)
 
-    def get_axis(self,axis):
+    def get_axis(self, axis):
         """
         Get the axis number for a dimension name.
 
@@ -1102,7 +1116,7 @@ class DimArray(AttrArray):
         The axis number corresponding to the dimension name.
         If axis is not a string, it is returned unchanged.
         """
-        if isinstance(axis,str):
+        if isinstance(axis, str):
             # must convert to index dim
             axis = self.dim_names.index(axis)
         return axis
@@ -1140,34 +1154,33 @@ class DimArray(AttrArray):
             return ret.view(AttrArray)
         else:
             # pop the dim
-            ret.dims = ret.dims[np.arange(len(ret.dims))!=axis]
+            ret.dims = ret.dims[np.arange(len(ret.dims)) != axis]
             return ret.view(self.__class__)
-
 
     def all(self, axis=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).all(axis=axis, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def any(self, axis=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).any(axis=axis, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def argmax(self, axis=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).argmax(axis=axis, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def argmin(self, axis=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).argmin(axis=axis, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def argsort(self, axis=-1, kind='quicksort', order=None):
         if axis is None:
             return self.view(AttrArray).argsort(axis=axis, kind=kind,
-                                                 order=order)
+                                                order=order)
         else:
             axis = self.get_axis(axis)
             ret = self.view(AttrArray).argsort(axis=axis, kind=kind,
@@ -1187,7 +1200,7 @@ class DimArray(AttrArray):
     def cumprod(self, axis=None, dtype=None, out=None):
         if axis is None:
             return self.view(AttrArray).cumprod(axis=axis, dtype=dtype,
-                                                  out=out)
+                                                out=out)
         else:
             axis = self.get_axis(axis)
             ret = self.view(AttrArray).cumprod(axis=axis, dtype=dtype, out=out)
@@ -1196,7 +1209,7 @@ class DimArray(AttrArray):
     def cumsum(self, axis=None, dtype=None, out=None):
         if axis is None:
             return self.view(AttrArray).cumsum(axis=axis, dtype=dtype,
-                                                out=out)
+                                               out=out)
         else:
             axis = self.get_axis(axis)
             ret = self.view(AttrArray).cumsum(axis=axis, dtype=dtype, out=out)
@@ -1211,32 +1224,32 @@ class DimArray(AttrArray):
     def max(self, axis=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).max(axis=axis, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def mean(self, axis=None, dtype=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).mean(axis=axis, dtype=dtype, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def min(self, axis=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).min(axis=axis, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def nanmean(self, axis=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).nanmean(axis=axis)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def nanstd(self, axis=None, ddof=0):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).nanstd(axis=axis, ddof=0)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def nanvar(self, axis=None, ddof=0):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).nanvar(axis=axis, ddof=0)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def nonzero(self, *args, **kwargs):
         return self.view(AttrArray).nonzero(*args, **kwargs)
@@ -1244,12 +1257,12 @@ class DimArray(AttrArray):
     def prod(self, axis=None, dtype=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).prod(axis=axis, dtype=dtype, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def ptp(self, axis=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).ptp(axis=axis, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def ravel(self, *args, **kwargs):
         return self.view(AttrArray).ravel(*args, **kwargs)
@@ -1259,7 +1272,7 @@ class DimArray(AttrArray):
         return self.view(AttrArray).repeat(repeats, axis=axis)
 
     def reshape(self, shape, order='C'):
-        return np.reshape(self.view(AttrArray),shape,order)
+        return np.reshape(self.view(AttrArray), shape, order)
 
     def resize(self, *args, **kwargs):
         """Resizing is not possible for dimensioned arrays. Calling
@@ -1271,7 +1284,7 @@ class DimArray(AttrArray):
 
     def sort(self, axis=-1, kind='quicksort', order=None):
         if axis is None:
-            raise ValueError("Please specify an axis! To sort a flattened "+
+            raise ValueError("Please specify an axis! To sort a flattened " +
                              "array convert to (e.g.) numpy.ndarray.")
         axis = self.get_axis(axis)
         self.view(AttrArray).sort(axis=axis, kind=kind, order=order)
@@ -1283,8 +1296,8 @@ class DimArray(AttrArray):
         d = 0
         for dms in ret.dims:
             if len(ret.dims[d]) == 1:
-                #ret.dims.pop(d)
-                ret.dims = ret.dims[np.arange(len(ret.dims))!=d]
+                # ret.dims.pop(d)
+                ret.dims = ret.dims[np.arange(len(ret.dims)) != d]
             else:
                 d += 1
         return ret.view(self.__class__)
@@ -1292,17 +1305,17 @@ class DimArray(AttrArray):
     def std(self, axis=None, dtype=None, out=None, ddof=0):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).std(axis=axis, dtype=dtype, out=out, ddof=0)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def sum(self, axis=None, dtype=None, out=None):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).sum(axis=axis, dtype=dtype, out=out)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
     def swapaxes(self, axis1, axis2):
         axis1 = self.get_axis(axis1)
         axis2 = self.get_axis(axis2)
-        ret = self.view(AttrArray).swapaxes(axis1,axis2)
+        ret = self.view(AttrArray).swapaxes(axis1, axis2)
         tmp = ret.dims[axis1]
         ret.dims[axis1] = ret.dims[axis2]
         ret.dims[axis2] = tmp
@@ -1326,7 +1339,7 @@ class DimArray(AttrArray):
     def transpose(self, *axes):
         axes = np.squeeze(axes)
         # PBS (I think this was wrong):if len(axes.shape)==len(self):
-        if(len(np.shape(axes))>0): # needs to be evaluated separately
+        if(len(np.shape(axes)) > 0):  # needs to be evaluated separately
                                    # b/c len(axes) won't work on None
             if(len(axes) == self.ndim):
                 axes = [self.get_axis(a) for a in axes]
@@ -1343,55 +1356,56 @@ class DimArray(AttrArray):
         axis = self.get_axis(axis)
         ret = self.view(AttrArray).var(axis=axis, dtype=dtype,
                                        out=out, ddof=ddof)
-        return self._ret_func(ret,axis)
+        return self._ret_func(ret, axis)
 
 # set the doc strings
 
+
 # Methods that return DimArrays and take an axis argument:
 axis_msg =\
-"""
+    """
 
  **Below is the docstring from numpy.ndarray.**
  **For DimArray instances, the axis may be specified as string (dimension name).**
 
 """
 axis_msg_aa =\
-"""
+    """
 
  **Below is the docstring from AttrArray.**
  **For DimArray instances, the axis may be specified as string (dimension name).**
 
 """
 axes_msg =\
-"""
+    """
 
  **Below is the docstring from numpy.ndarray.**
  **The axes may be specified as strings (dimension names).**
 
 """
-DimArray.all.__doc__ = axis_msg+np.ndarray.all.__doc__
-DimArray.any.__doc__ = axis_msg+np.ndarray.any.__doc__
-DimArray.argmax.__doc__ = axis_msg+np.ndarray.argmax.__doc__
-DimArray.argmin.__doc__ = axis_msg+np.ndarray.argmin.__doc__
-DimArray.argsort.__doc__ = axis_msg+np.ndarray.argsort.__doc__
-DimArray.compress.__doc__ = axis_msg+np.ndarray.compress.__doc__
-DimArray.cumprod.__doc__ = axis_msg+np.ndarray.cumprod.__doc__
-DimArray.cumsum.__doc__ = axis_msg+np.ndarray.cumsum.__doc__
-DimArray.max.__doc__ = axis_msg+np.ndarray.max.__doc__
-DimArray.mean.__doc__ = axis_msg+np.ndarray.mean.__doc__
-DimArray.min.__doc__ = axis_msg+np.ndarray.min.__doc__
-DimArray.nanmean.__doc__ = axis_msg_aa+AttrArray.nanmean.__doc__
-DimArray.nanstd.__doc__ = axis_msg_aa+AttrArray.nanstd.__doc__
-DimArray.nanvar.__doc__ = axis_msg_aa+AttrArray.nanvar.__doc__
-DimArray.prod.__doc__ = axis_msg+np.ndarray.prod.__doc__
-DimArray.ptp.__doc__ = axis_msg+np.ndarray.ptp.__doc__
-DimArray.sort.__doc__ = axis_msg+np.ndarray.sort.__doc__
-DimArray.std.__doc__ = axis_msg+np.ndarray.std.__doc__
-DimArray.sum.__doc__ = axis_msg+np.ndarray.sum.__doc__
-DimArray.swapaxes.__doc__ = axes_msg+np.ndarray.swapaxes.__doc__
-DimArray.take.__doc__ = axis_msg+np.ndarray.take.__doc__
-DimArray.transpose.__doc__ = axes_msg+np.ndarray.transpose.__doc__
-DimArray.var.__doc__ = axis_msg+np.ndarray.var.__doc__
+DimArray.all.__doc__ = axis_msg + np.ndarray.all.__doc__
+DimArray.any.__doc__ = axis_msg + np.ndarray.any.__doc__
+DimArray.argmax.__doc__ = axis_msg + np.ndarray.argmax.__doc__
+DimArray.argmin.__doc__ = axis_msg + np.ndarray.argmin.__doc__
+DimArray.argsort.__doc__ = axis_msg + np.ndarray.argsort.__doc__
+DimArray.compress.__doc__ = axis_msg + np.ndarray.compress.__doc__
+DimArray.cumprod.__doc__ = axis_msg + np.ndarray.cumprod.__doc__
+DimArray.cumsum.__doc__ = axis_msg + np.ndarray.cumsum.__doc__
+DimArray.max.__doc__ = axis_msg + np.ndarray.max.__doc__
+DimArray.mean.__doc__ = axis_msg + np.ndarray.mean.__doc__
+DimArray.min.__doc__ = axis_msg + np.ndarray.min.__doc__
+DimArray.nanmean.__doc__ = axis_msg_aa + AttrArray.nanmean.__doc__
+DimArray.nanstd.__doc__ = axis_msg_aa + AttrArray.nanstd.__doc__
+DimArray.nanvar.__doc__ = axis_msg_aa + AttrArray.nanvar.__doc__
+DimArray.prod.__doc__ = axis_msg + np.ndarray.prod.__doc__
+DimArray.ptp.__doc__ = axis_msg + np.ndarray.ptp.__doc__
+DimArray.sort.__doc__ = axis_msg + np.ndarray.sort.__doc__
+DimArray.std.__doc__ = axis_msg + np.ndarray.std.__doc__
+DimArray.sum.__doc__ = axis_msg + np.ndarray.sum.__doc__
+DimArray.swapaxes.__doc__ = axes_msg + np.ndarray.swapaxes.__doc__
+DimArray.take.__doc__ = axis_msg + np.ndarray.take.__doc__
+DimArray.transpose.__doc__ = axes_msg + np.ndarray.transpose.__doc__
+DimArray.var.__doc__ = axis_msg + np.ndarray.var.__doc__
 
 # Methods that return DimArrays and do not take an axis argument:
 DimArray.nonzero.__doc__ = np.ndarray.nonzero.__doc__
@@ -1400,16 +1414,16 @@ DimArray.squeeze.__doc__ = np.ndarray.squeeze.__doc__
 
 # Methods that return AttrArrays: Prefic docstring with warning!
 cast_msg =\
-"""
+    """
 
  **CAUTION: the output of this method is cast to an AttrArray instance.**
  **Some attributes may no longer be valid after this Method is applied!**
 
 """
-DimArray.diagonal.__doc__ = cast_msg+np.ndarray.diagonal.__doc__
-DimArray.flatten.__doc__ = cast_msg+np.ndarray.flatten.__doc__
-DimArray.ravel.__doc__ = cast_msg+np.ndarray.ravel.__doc__
-DimArray.repeat.__doc__ = cast_msg+np.ndarray.repeat.__doc__
-DimArray.reshape.__doc__ = cast_msg+np.ndarray.reshape.__doc__
+DimArray.diagonal.__doc__ = cast_msg + np.ndarray.diagonal.__doc__
+DimArray.flatten.__doc__ = cast_msg + np.ndarray.flatten.__doc__
+DimArray.ravel.__doc__ = cast_msg + np.ndarray.ravel.__doc__
+DimArray.repeat.__doc__ = cast_msg + np.ndarray.repeat.__doc__
+DimArray.reshape.__doc__ = cast_msg + np.ndarray.reshape.__doc__
 #DimArray.resize.im_func.func_doc = cast_msg+np.ndarray.resize.__doc__
-DimArray.trace.__doc__ = cast_msg+np.ndarray.trace.__doc__
+DimArray.trace.__doc__ = cast_msg + np.ndarray.trace.__doc__

@@ -14,7 +14,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
+import os
 #import sphinx.ext.autodoc
 
 # If your extensions are in another directory, add it here. If the directory
@@ -29,7 +30,7 @@ sys.path.append(os.path.abspath('sphinxexts'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc','numpydoc']
+extensions = ['sphinx.ext.autodoc', 'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -108,7 +109,7 @@ html_style = 'ptsa.css'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = None #'_static/logo.png'
+html_logo = None  # '_static/logo.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -171,8 +172,8 @@ htmlhelp_basename = 'PTSAdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'PTSA.tex', r'PTSA Documentation',
-   r'Per B. Sederberg and Christoph T. Weidemann', 'manual'),
+    ('index', 'PTSA.tex', r'PTSA Documentation',
+     r'Per B. Sederberg and Christoph T. Weidemann', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

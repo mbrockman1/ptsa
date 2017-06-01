@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -18,7 +18,7 @@ from scipy.linalg import diagsvd
 from scipy.stats import rankdata
 import scipy.stats.distributions as dists
 
-from joblib import Parallel,delayed
+from joblib import Parallel, delayed
 
 # Connect to an R session
 import rpy2.robjects
@@ -29,7 +29,7 @@ from rpy2.robjects.packages import importr
 from rpy2.robjects import Formula, FactorVector
 from rpy2.robjects.environments import Environment
 from rpy2.robjects.vectors import DataFrame, Vector, FloatVector
-from rpy2.rinterface import MissingArg,SexpVector
+from rpy2.rinterface import MissingArg, SexpVector
 
 # Make it so we can send numpy arrays to R
 import rpy2.robjects.numpy2ri
@@ -37,18 +37,18 @@ rpy2.robjects.numpy2ri.activate()
 #import rpy2.robjects as ro
 #import  rpy2.robjects.numpy2ri as numpy2ri
 #ro.conversion.py2ri = numpy2ri
-#numpy2ri.activate()
+# numpy2ri.activate()
 
 # load some required packages
-# PBS: Eventually we should try/except these to get people 
+# PBS: Eventually we should try/except these to get people
 # to install missing packages
 lme4 = importr('lme4')
 rstats = importr('stats')
-if hasattr(lme4,'coef'):
-    r_coef  = lme4.coef
+if hasattr(lme4, 'coef'):
+    r_coef = lme4.coef
 else:
     r_coef = rstats.coef
-if hasattr(lme4,'model_matrix'):
+if hasattr(lme4, 'model_matrix'):
     r_model_matrix = lme4.model_matrix
 else:
     r_model_matrix = rstats.model_matrix
@@ -60,12 +60,14 @@ from .stat_helper import fdr_correction
 # deal with warnings for bootstrap
 import warnings
 
+
 class InstabilityWarning(UserWarning):
     """Issued when results may be unstable."""
     pass
 
+
 # On import, make sure that InstabilityWarnings are not filtered out.
-warnings.simplefilter('always',InstabilityWarning)
+warnings.simplefilter('always', InstabilityWarning)
 
 
 class LMER():
@@ -76,7 +78,8 @@ class LMER():
     and extracting the associated t-stat.
 
     """
-    def __init__(self, formula_str, df, factors=None, 
+
+    def __init__(self, formula_str, df, factors=None,
                  resid_formula_str=None, **lmer_opts):
         """
         """
@@ -86,28 +89,28 @@ class LMER():
         # add column if necessary
         if not pred_var in df.dtype.names:
             # must add it
-            df = append_fields(df, pred_var, [0.0]*len(df), usemask=False)
+            df = append_fields(df, pred_var, [0.0] * len(df), usemask=False)
 
         # make factor list if necessary
         if factors is None:
             factors = {}
         # add in missingarg for any potential factor not provided
         for k in df.dtype.names:
-            if isinstance(df[k][0],str) and k not in factors:
+            if isinstance(df[k][0], str) and k not in factors:
                 factors[k] = MissingArg
-                
+
         for f in factors:
             if factors[f] is None:
                 factors[f] = MissingArg
             # checking for both types of R Vectors for rpy2 variations
-            elif (not isinstance(factors[f],Vector) and 
+            elif (not isinstance(factors[f], Vector) and
                   not factors[f] == MissingArg):
                 factors[f] = Vector(factors[f])
 
         # convert the recarray to a DataFrame (releveling if desired)
-        self._rdf = DataFrame({k:(FactorVector(df[k], levels=factors[k]) 
-                                  if (k in factors) or isinstance(df[k][0],str) 
-                                  else df[k]) 
+        self._rdf = DataFrame({k: (FactorVector(df[k], levels=factors[k])
+                                   if (k in factors) or isinstance(df[k][0], str)
+                                   else df[k])
                                for k in df.dtype.names})
 
         # get the column index
@@ -142,10 +145,11 @@ class LMER():
         # run on each permutation
         tvals = None
         log_likes = None
-        for i,perm in enumerate(perms):
+        for i, perm in enumerate(perms):
             if not perm is None:
                 # set the perm
-                self._rdf[self._col_ind] = self._rdf[self._col_ind].rx(perm+1)
+                self._rdf[self._col_ind] = self._rdf[self._col_ind].rx(
+                    perm + 1)
 
             # inside try block to catch convergence errors
             try:
@@ -159,8 +163,8 @@ class LMER():
                                **self._lmer_opts)
             except:
                 continue
-                #tvals.append(np.array([np.nan]))
-            
+                # tvals.append(np.array([np.nan]))
+
             # save the model
             if self._ms is None:
                 self._ms = ms
@@ -173,7 +177,7 @@ class LMER():
                 # init the data
                 # get the row names
                 rows = list(r['row.names'](df))
-                tvals = np.rec.fromarrays([np.ones(len(perms))*np.nan
+                tvals = np.rec.fromarrays([np.ones(len(perms)) * np.nan
                                            for ro in range(len(rows))],
                                           names=','.join(rows))
                 log_likes = np.zeros(len(perms))
@@ -211,7 +215,7 @@ class OnlineVariance(object):
 
 
 def R_to_tfce(R, connectivity=None, shape=None,
-              dt=.01, E=2/3., H=2.0):
+              dt=.01, E=2 / 3., H=2.0):
     """Apply TFCE to the R values."""
     # allocate for tfce
     Rt = np.zeros_like(R)
@@ -240,7 +244,7 @@ def pick_stable_features(Z, nboot=500):
     """Use a bootstrap to pick stable features.
     """
     # generate the boots
-    boots = [np.random.random_integers(0, len(Z)-1, len(Z))
+    boots = [np.random.random_integers(0, len(Z) - 1, len(Z))
              for i in range(nboot)]
 
     # calc bootstrap ratio
@@ -251,13 +255,13 @@ def pick_stable_features(Z, nboot=500):
     ov = OnlineVariance(ddof=0)
     for b in range(len(boots)):
         ov.include(Z[boots[b]].mean(0))
-    Zbr = Z.mean(0)/ov.std
+    Zbr = Z.mean(0) / ov.std
 
     # ignore any nans
     Zbr[np.isnan(Zbr)] = 0.
 
     # bootstrap ratios are supposedly t-distributed, so test sig
-    Zbr = dists.t(len(Z)-1).cdf(-1*np.abs(Zbr))*2.
+    Zbr = dists.t(len(Z) - 1).cdf(-1 * np.abs(Zbr)) * 2.
     Zbr[Zbr > 1] = 1
     return Zbr
 
@@ -286,7 +290,7 @@ def blockwise_dot(A, B, max_elements=int(2**26), out=None):
     if len(A.shape) == 1:
         A = A[np.newaxis, :]
     if len(B.shape) == 1:
-        B = B[:,np.newaxis]
+        B = B[:, np.newaxis]
     m,  n = A.shape
     n1, o = B.shape
 
@@ -336,7 +340,7 @@ def _eval_model(model_id, perm=None):
 
     # loop over group vars
     ind = {}
-    for i,k in enumerate(mm._groups[ind_b]):
+    for i, k in enumerate(mm._groups[ind_b]):
         # grab the A and M
         A = mm._A[k]
         M = mm._M[k]
@@ -352,7 +356,7 @@ def _eval_model(model_id, perm=None):
             R.append(mm._R[ind_b[i]])
         else:
             # calc the correlation
-            #R.append(np.dot(A.T,M[ind[k]].copy()))
+            # R.append(np.dot(A.T,M[ind[k]].copy()))
             #R.append(blockwise_dot(M[:][ind[k]].T, A).T)
             R.append(blockwise_dot(M[ind[k]].T, A).T)
 
@@ -438,10 +442,10 @@ def _eval_model(model_id, perm=None):
             continue
 
         # flatten then weigh features via dot product
-        Dw = np.concatenate([#np.dot(mm._D[k][ind[k]].copy(),Vh[i])
-                             #blockwise_dot(mm._D[k][:][ind[k]], Vh[i])
-                             blockwise_dot(mm._D[k][ind[k]], Vh[i])
-                             for g, k in enumerate(mm._groups[ind_b])])
+        Dw = np.concatenate([  # np.dot(mm._D[k][ind[k]].copy(),Vh[i])
+            #blockwise_dot(mm._D[k][:][ind[k]], Vh[i])
+            blockwise_dot(mm._D[k][ind[k]], Vh[i])
+            for g, k in enumerate(mm._groups[ind_b])])
 
         # run the main model
         if mer is None:
@@ -506,9 +510,9 @@ def _eval_model(model_id, perm=None):
         #                          Vh[ss > 0, ...])))  # /(ss>0).sum())
         tfs.append(blockwise_dot(tvals[k],
                                  blockwise_dot(diagsvd(ss[ss > 0],
-                                         len(ss[ss > 0]),
-                                         len(ss[ss > 0])),
-                                 Vh[ss > 0, ...])))
+                                                       len(ss[ss > 0]),
+                                                       len(ss[ss > 0])),
+                                               Vh[ss > 0, ...])))
     tfs = np.rec.fromarrays(tfs, names=','.join(tvals.dtype.names))
 
     # decide what to return
@@ -556,6 +560,7 @@ class MELD(object):
 
 
     """
+
     def __init__(self, fe_formula, re_formula,
                  re_group, dep_data, ind_data,
                  factors=None, row_mask=None,
@@ -566,7 +571,7 @@ class MELD(object):
                  svd_terms=None, feat_thresh=0.05,
                  feat_nboot=1000, do_tfce=False,
                  connectivity=None, shape=None,
-                 dt=.01, E=2/3., H=2.0,
+                 dt=.01, E=2 / 3., H=2.0,
                  n_jobs=1, verbose=10,
                  lmer_opts=None):
         """
@@ -578,7 +583,7 @@ class MELD(object):
         with a grouping variable.
 
         """
-        if verbose>0:
+        if verbose > 0:
             sys.stdout.write('Initializing...')
             sys.stdout.flush()
             start_time = time.time()
@@ -767,7 +772,8 @@ class MELD(object):
 
         # mask the connectivity
         if self._do_tfce and (len(self._dep_mask.flatten()) > self._dep_mask.sum()):
-            self._connectivity = self._connectivity.tolil()[self._dep_mask.flatten()][:,self._dep_mask.flatten()].tocoo()
+            self._connectivity = self._connectivity.tolil(
+            )[self._dep_mask.flatten()][:, self._dep_mask.flatten()].tocoo()
 
         # prepare for the perms and boots and jackknife
         self._perms = []
@@ -777,7 +783,7 @@ class MELD(object):
         self._pfmask = []
 
         if verbose > 0:
-            sys.stdout.write('Done (%.2g sec)\n' % (time.time()-start_time))
+            sys.stdout.write('Done (%.2g sec)\n' % (time.time() - start_time))
             sys.stdout.write('Processing actual data...')
             sys.stdout.flush()
             start_time = time.time()
@@ -800,7 +806,7 @@ class MELD(object):
         self._mer = mer
 
         if verbose > 0:
-            sys.stdout.write('Done (%.2g sec)\n' % (time.time()-start_time))
+            sys.stdout.write('Done (%.2g sec)\n' % (time.time() - start_time))
             sys.stdout.flush()
 
     def __del__(self):
@@ -877,7 +883,7 @@ class MELD(object):
         self._pfmask.extend(feat_mask)
 
         if verbose > 0:
-            sys.stdout.write('Done (%.2g sec)\n' % (time.time()-start_time))
+            sys.stdout.write('Done (%.2g sec)\n' % (time.time() - start_time))
             sys.stdout.flush()
 
     @property
@@ -910,7 +916,7 @@ class MELD(object):
     def get_p_features(self, names=None, conj=None):
         tpf = self._tb[0].__array_wrap__(np.hstack(self._tb))
         pfmasks = np.array(self._pfmask).transpose((1, 0, 2))
-        nperms = np.float(len(self._perms)+1)
+        nperms = np.float(len(self._perms) + 1)
 
         pfs = []
         if names is None:
@@ -934,7 +940,7 @@ class MELD(object):
             # then divide by number of perms
             # got this from:
             # http://stackoverflow.com/questions/18875970/comparing-two-numpy-arrays-of-different-length
-            pf = ((nperms-np.searchsorted(nullTdist, tf.flatten(), 'left')) /
+            pf = ((nperms - np.searchsorted(nullTdist, tf.flatten(), 'left')) /
                   nperms).reshape((int(nperms), -1))
             pfs.append(pf)
 
@@ -956,7 +962,7 @@ class MELD(object):
         # get pvalues for each feature for each term
         pfts = np.searchsorted(nullPdist,
                                pfs[:, 0, :].flatten(),
-                               'right').reshape(len(pfs), -1)/nperms
+                               'right').reshape(len(pfs), -1) / nperms
         pfeats = []
         for n in range(len(names)):
             pfeat = np.ones(self._feat_shape)
@@ -969,7 +975,7 @@ class MELD(object):
 
 
 if __name__ == '__main__':
-    np.random.RandomState(seed = 42)
+    np.random.RandomState(seed=42)
 
     # test some MELD
     n_jobs = -1
@@ -986,7 +992,7 @@ if __name__ == '__main__':
 
     s = np.concatenate([np.array(['subj%02d' % i] * nobs)
                         for i in range(nsubj)])
-    beh = np.concatenate([np.array([1] * (nobs/2) + [0]*(nobs / 2))
+    beh = np.concatenate([np.array([1] * (nobs / 2) + [0] * (nobs / 2))
                           for i in range(nsubj)])
     # observations (data frame)
     ind_data = np.rec.fromarrays((np.zeros(len(s)),
@@ -1008,10 +1014,10 @@ if __name__ == '__main__':
     dep_data_s = dep_data.copy()
     for i in range(0, 20, 2):
         for j in range(2):
-            dep_data_s[:, 4, i+j] += (ind_data['beh'] * (i+1)/50.)
-            dep_data_s[:, 5, i+j] += (ind_data['beh'] * (i+1)/50.)
-            dep_data_s[:, 5, i+j] += (ind_data['beh2'] * (i+1)/50.)
-            dep_data_s[:, 6, i+j] += (ind_data['beh2'] * (i+1)/50.)
+            dep_data_s[:, 4, i + j] += (ind_data['beh'] * (i + 1) / 50.)
+            dep_data_s[:, 5, i + j] += (ind_data['beh'] * (i + 1) / 50.)
+            dep_data_s[:, 5, i + j] += (ind_data['beh2'] * (i + 1) / 50.)
+            dep_data_s[:, 6, i + j] += (ind_data['beh2'] * (i + 1) / 50.)
 
     # smooth the data
     if smoothed:
@@ -1028,14 +1034,14 @@ if __name__ == '__main__':
                 feat_nboot=1000, feat_thresh=0.05,
                 do_tfce=True,
                 connectivity=None, shape=None,
-                dt=.01, E=2/3., H=2.0,
+                dt=.01, E=2 / 3., H=2.0,
                 n_jobs=n_jobs, verbose=verbose,
                 memmap=memmap,
                 # lmer_opts={'control':lme4.lmerControl(optimizer="nloptwrap",
                 #                                       #optimizer="Nelder_Mead",
                 #                                       optCtrl=r['list'](maxfun=100000))
                 #        }
-               )
+                )
     me_s.run_perms(nperms)
     pfts = me_s.p_features
     print("Number of signifcant features:", [(n, (pfts[n] <= .05).sum())

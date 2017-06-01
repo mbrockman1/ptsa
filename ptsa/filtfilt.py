@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -222,8 +222,8 @@ unavoidable.
 
     if padtype not in ['even', 'odd', 'constant', None]:
         raise ValueError(("Unknown value '%s' given to padtype. padtype must "
-                         "be 'even', 'odd', 'constant', or None.") %
-                            padtype)
+                          "be 'even', 'odd', 'constant', or None.") %
+                         padtype)
 
     b = np.asarray(b)
     a = np.asarray(a)

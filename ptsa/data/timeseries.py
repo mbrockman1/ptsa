@@ -1,5 +1,5 @@
-#emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-#ex: set sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
 #   See the COPYING file distributed along with the PTSA package for the
@@ -7,7 +7,7 @@
 #
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 
-from dimarray import Dim,DimArray,AttrArray
+from dimarray import Dim, DimArray, AttrArray
 from ptsa import filt
 from ptsa.helper import next_pow2, pad_to_next_pow2
 
@@ -76,9 +76,9 @@ class TimeSeries(DimArray):
     'time'
     """
 
-    _required_attrs = {'dims':np.ndarray,
-                       'tdim':str,
-                       'samplerate':float}
+    _required_attrs = {'dims': np.ndarray,
+                       'tdim': str,
+                       'samplerate': float}
     taxis = property(lambda self:
                      self.get_axis(self.tdim),
                      doc="Numeric time axis (read only).")
@@ -90,8 +90,8 @@ class TimeSeries(DimArray):
         # ensure that tdim is a valid dimension name:
         if not(tdim in ts.dim_names):
             raise ValueError(
-                'Provided time dimension name (tdim) is invalid!\n'+
-                'Provided value: '+ str(tdim)+'\nAvailable dimensions: '+
+                'Provided time dimension name (tdim) is invalid!\n' +
+                'Provided value: ' + str(tdim) + '\nAvailable dimensions: ' +
                 str(ts.dim_names))
         ts.tdim = tdim
         # ensure that sample rate is a float:
@@ -99,7 +99,7 @@ class TimeSeries(DimArray):
         # ensure that sample rate is postive:
         if samplerate <= 0:
             raise ValueError(
-                'Samplerate must be positive! Provided value: '+
+                'Samplerate must be positive! Provided value: ' +
                 str(samplerate))
         ts.samplerate = samplerate
 
@@ -111,17 +111,17 @@ class TimeSeries(DimArray):
         if name == 'tdim':
             if not(value in self.dim_names):
                 raise ValueError(
-                    'Provided time dimension name (tdim) is invalid!\n'+
-                    'Provided value: '+ str(value)+'\nAvailable dimensions: '+
+                    'Provided time dimension name (tdim) is invalid!\n' +
+                    'Provided value: ' + str(value) + '\nAvailable dimensions: ' +
                     str(self.dim_names))
         # ensure that sample rate is a postive float:
         elif name == 'samplerate':
             value = float(value)
             if value <= 0:
                 raise ValueError(
-                    'Samplerate must be positive! Provided value: '+
+                    'Samplerate must be positive! Provided value: ' +
                     str(value))
-        DimArray.__setattr__(self,name,value)
+        DimArray.__setattr__(self, name, value)
 
     def _ret_func(self, ret, axis):
         """
@@ -137,14 +137,13 @@ class TimeSeries(DimArray):
             if self.get_axis(axis) == self.taxis:
                 return_as_dimarray = True
             # pop the dim
-            ret.dims = ret.dims[np.arange(len(ret.dims))!=axis]
+            ret.dims = ret.dims[np.arange(len(ret.dims)) != axis]
         if return_as_dimarray:
             # The function removed the time dimension, so we return a
             # DimArray instead of a TimeSeries
             return ret.view(DimArray)
         else:
             return ret.view(self.__class__)
-
 
     def remove_buffer(self, duration):
         """
@@ -175,14 +174,14 @@ class TimeSeries(DimArray):
             duration = duration.repeat(2)
         num_samp = np.round(self.samplerate * duration)
         # ensure that the number of samples are >= 0:
-        if np.any(num_samp<0):
-                raise ValueError('Duration must not be negative!'+
-                                 'Provided values: '+str(duration))
+        if np.any(num_samp < 0):
+            raise ValueError('Duration must not be negative!' +
+                             'Provided values: ' + str(duration))
         # remove the buffer from the data
         return (self.take(list(range(int(num_samp[0]),
-                    self.shape[self.taxis]-int(num_samp[1]))), self.taxis))
+                                     self.shape[self.taxis] - int(num_samp[1]))), self.taxis))
 
-    def filtered(self,freq_range,filt_type='stop',order=4):
+    def filtered(self, freq_range, filt_type='stop', order=4):
         """
         Filter the data using a Butterworth filter and return a new
         TimeSeries instance.
@@ -203,12 +202,12 @@ class TimeSeries(DimArray):
         """
 
         filtered_array = filt.buttfilt(np.asarray(self),
-                                       freq_range,self.samplerate,filt_type,
-                                       order,axis=self.taxis)
+                                       freq_range, self.samplerate, filt_type,
+                                       order, axis=self.taxis)
         attrs = self._attrs.copy()
         for k in list(self._required_attrs.keys()):
-            attrs.pop(k,None)
-        return TimeSeries(filtered_array,self.tdim, self.samplerate,
+            attrs.pop(k, None)
+        return TimeSeries(filtered_array, self.tdim, self.samplerate,
                           dims=self.dims.copy(), **attrs)
 
     def resampled(self, resampled_rate, window=None,
@@ -247,24 +246,26 @@ class TimeSeries(DimArray):
         """
         # resample the data, getting new time range
         time_range = self[self.tdim]
-        new_length = int(np.round(len(time_range)*resampled_rate/self.samplerate))
+        new_length = int(np.round(len(time_range) *
+                                  resampled_rate / self.samplerate))
 
         if pad_to_pow2:
             padded_length = 2**next_pow2(len(time_range))
-            padded_new_length = int(np.round(padded_length*resampled_rate/self.samplerate))
+            padded_new_length = int(
+                np.round(padded_length * resampled_rate / self.samplerate))
             time_range = np.hstack([time_range,
-                                    (np.arange(1,padded_length-len(time_range)+1)*np.diff(time_range[-2:]))+time_range[-1]])
+                                    (np.arange(1, padded_length - len(time_range) + 1) * np.diff(time_range[-2:])) + time_range[-1]])
 
         if loop_axis is None:
             # just do standard method on all data at once
             if pad_to_pow2:
-                newdat,new_time_range = resample(pad_to_next_pow2(np.asarray(self),axis=self.taxis),
-                                                 padded_new_length, t=time_range,
-                                                 axis=self.taxis, window=window)
+                newdat, new_time_range = resample(pad_to_next_pow2(np.asarray(self), axis=self.taxis),
+                                                  padded_new_length, t=time_range,
+                                                  axis=self.taxis, window=window)
             else:
-                newdat,new_time_range = resample(np.asarray(self),
-                                                 new_length, t=time_range,
-                                                 axis=self.taxis, window=window)
+                newdat, new_time_range = resample(np.asarray(self),
+                                                  new_length, t=time_range,
+                                                  axis=self.taxis, window=window)
 
         else:
             # loop over specified axis
@@ -272,14 +273,14 @@ class TimeSeries(DimArray):
             loop_dim = self.get_dim_name(loop_axis)
             loop_dim_len = len(self[loop_dim])
             # specify empty boolean index
-            ind = np.zeros(loop_dim_len,dtype=np.bool)
+            ind = np.zeros(loop_dim_len, dtype=np.bool)
             newdat = []
             if has_mp and num_mp_procs != 0:
                 po = mp.Pool(num_mp_procs)
 
             for i in range(loop_dim_len):
                 ind[i] = True
-                dat = self.select(**{loop_dim:ind})
+                dat = self.select(**{loop_dim: ind})
                 taxis = dat.taxis
                 if has_mp and num_mp_procs != 0:
                     # start async proc
@@ -294,24 +295,24 @@ class TimeSeries(DimArray):
                                                       taxis, window)))
                 else:
                     # just call on that dataset
-                    sys.stdout.write('%d '%i)
+                    sys.stdout.write('%d ' % i)
                     sys.stdout.flush()
                     if pad_to_pow2:
                         dat = pad_to_next_pow2(np.asarray(dat), axis=dat.taxis)
-                        ndat,new_time_range = resample(np.asarray(dat), padded_new_length, t=time_range,
-                                                       axis=taxis, window=window)
+                        ndat, new_time_range = resample(np.asarray(dat), padded_new_length, t=time_range,
+                                                        axis=taxis, window=window)
                     else:
-                        ndat,new_time_range = resample(np.asarray(dat), new_length, t=time_range,
-                                                       axis=taxis, window=window)
+                        ndat, new_time_range = resample(np.asarray(dat), new_length, t=time_range,
+                                                        axis=taxis, window=window)
                     newdat.append(ndat)
                 ind[i] = False
             if has_mp and num_mp_procs != 0:
                 # aggregate mp results
                 po.close()
-                #po.join()
+                # po.join()
                 out = []
                 for i in range(len(newdat)):
-                    sys.stdout.write('%d '%i)
+                    sys.stdout.write('%d ' % i)
                     sys.stdout.flush()
                     out.append(newdat[i].get())
                 #out = [newdat[i].get() for i in range(len(newdat))]
@@ -319,28 +320,28 @@ class TimeSeries(DimArray):
                 new_time_range = out[i][1]
 
             # concatenate the new data
-            newdat = np.concatenate(newdat,axis=self.get_axis(loop_axis))
+            newdat = np.concatenate(newdat, axis=self.get_axis(loop_axis))
 
             sys.stdout.write('\n')
             sys.stdout.flush()
 
         # remove pad if we padded it
         if pad_to_pow2:
-            newdat = newdat.take(list(range(new_length)),axis=self.taxis)
+            newdat = newdat.take(list(range(new_length)), axis=self.taxis)
             new_time_range = new_time_range[:new_length]
 
         # set the time dimension
         newdims = self.dims.copy()
         attrs = self.dims[self.taxis]._attrs.copy()
         for k in list(self.dims[self.taxis]._required_attrs.keys()):
-            attrs.pop(k,None)
+            attrs.pop(k, None)
         newdims[self.taxis] = Dim(new_time_range,
                                   self.dims[self.taxis].name,
                                   **attrs)
 
         attrs = self._attrs.copy()
         for k in list(self._required_attrs.keys()):
-            attrs.pop(k,None)
+            attrs.pop(k, None)
         return TimeSeries(newdat, self.tdim, resampled_rate,
                           dims=newdims, **attrs)
 
@@ -364,7 +365,8 @@ class TimeSeries(DimArray):
 
         """
         # get the average of baseline range
-        baseline = self['time >= %f'%base_range[0],'time <= %f'%base_range[1]].mean('time')
+        baseline = self['time >= %f' % base_range[0],
+                        'time <= %f' % base_range[1]].mean('time')
 
         # replicate over the time dimension
         baseline = baseline.add_dim(self['time']).transpose(self.dim_names)
@@ -375,6 +377,6 @@ class TimeSeries(DimArray):
         # return a new timeseries
         attrs = self._attrs.copy()
         for k in list(self._required_attrs.keys()):
-            attrs.pop(k,None)
-        return TimeSeries(new_dat,self.tdim, self.samplerate,
+            attrs.pop(k, None)
+        return TimeSeries(new_dat, self.tdim, self.samplerate,
                           dims=self.dims.copy(), **attrs)
